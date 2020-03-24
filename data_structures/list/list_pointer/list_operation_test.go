@@ -13,6 +13,8 @@ func TestNode_Insert(t *testing.T) {
 	if !listp.IsEqual(list, l) {
 		t.Errorf("表插入失败\n")
 	}
+
+	return
 }
 
 func TestNode_Find(t *testing.T) {
@@ -21,6 +23,8 @@ func TestNode_Find(t *testing.T) {
 	if list.Find(3) != 2 {
 		t.Errorf("表查找失败\n")
 	}
+
+	return
 }
 
 func TestNode_Delete(t *testing.T) {
@@ -29,4 +33,6 @@ func TestNode_Delete(t *testing.T) {
 	if list.Delete(3) != 2 {
 		t.Errorf("表删除失败\n")
 	}
+
+	return
 }

@@ -19,6 +19,8 @@ func ExampleOperationFactory_NewOperation() {
 
 	fmt.Println(result)
 
+	return
+
 	// OutPut:
 	// 2
 }

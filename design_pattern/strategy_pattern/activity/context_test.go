@@ -15,6 +15,8 @@ func ExampleStrategyContext_CalculateSummary() {
 
 	fmt.Println(result)
 
+	return
+
 	// OutPut:
 	// 100
 }
