@@ -1,6 +1,6 @@
 package proxy
 
 type EmbroideryService interface {
-    Embroider(size string)
-    EmbroiderCustomized(size, requirements string)
+    Embroider(size string) string
+    EmbroiderCustomized(customer, size, requirements string) string
 }
