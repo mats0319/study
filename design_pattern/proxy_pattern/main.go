@@ -9,11 +9,11 @@ import (
 
 func main() {
     var (
-        girl1 = &proxy.EmbroideredGirl{Name: "EmbroideredGirl 1"}
-        girl2 = &proxy.EmbroideredGirl{Name: "EmbroideredGirl 2"}
-        girl3 = &proxy.EmbroideredGirl{Name: "EmbroideredGirl 3"}
-        agent = &proxy.Proxy{
-            Employees:            []*proxy.EmbroideredGirl{girl1, girl2, girl3},
+        girl1 = &mario.EmbroideredGirl{Name: "EmbroideredGirl 1"}
+        girl2 = &mario.EmbroideredGirl{Name: "EmbroideredGirl 2"}
+        girl3 = &mario.EmbroideredGirl{Name: "EmbroideredGirl 3"}
+        agent = &mario.Proxy{
+            Employees:            []*mario.EmbroideredGirl{girl1, girl2, girl3},
             Random:               rand.New(rand.NewSource(time.Now().Unix())),
             CustomizableCustomer: []string{"Mario"},
         }

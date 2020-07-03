@@ -1,4 +1,4 @@
-package proxy
+package mario
 
 type EmbroideryService interface {
     Embroider(size string) string
