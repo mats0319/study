@@ -1,74 +1,80 @@
-package list
+package mario
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type ListImpl struct {
+type listImpl struct {
 	Value int
-	Next *ListImpl
+	Next *listImpl
 }
 
-var _ List = (*ListImpl)(nil)
+var _ List = (*listImpl)(nil)
 
-func MakeEmpty() List {
-	return &ListImpl{}
+func NilList() List {
+	return (*listImpl)(nil)
 }
 
-func (l *ListImpl) PrintList() {
+func NewList() List {
+	return &listImpl{}
+}
+
+func MakeList(value ...int) List {
+	res := &listImpl{}
+	p := res
+	for i := range value {
+		p.Next = &listImpl{Value: value[i]}
+		p = p.Next
+	}
+
+	return res.Next
+}
+
+func (l *listImpl) Print() string {
 	p := l
 
 	listStr := ""
-	for ; p.Next != nil; p = p.Next {
+	for ; p != nil; p = p.Next {
 		listStr += fmt.Sprintf("%d -> ", p.Value)
 	}
-	listStr += fmt.Sprintf("%d .", p.Value)
 
-	fmt.Println("List:", listStr)
+	if len(listStr) > 0 {
+		listStr = listStr[:len(listStr)-3]
+	}
+
+	return fmt.Sprintf("List: %s.", listStr)
 }
 
-func (l *ListImpl) Find(key int) int {
+func (l *listImpl) Find(key int) int {
 	p := l
 
 	index := -1
+	count := 0
 	for ; p != nil; p = p.Next {
-		index++
 		if key == p.Value {
+			index = count
 			break
 		}
+
+		count++
 	}
 
 	return index
 }
 
-func (l *ListImpl) Insert(key int) List {
-	// todo: test is necessary?
-	//if l.IsNil() {
-	//	return &ListImpl{Value: key}
-	//}
-
-	p := l
-	for ; p != nil; p = p.Next {
+func (l *listImpl) Insert(key int) List {
+	h := &listImpl{Next: l}
+	p := h
+	for ; p.Next != nil; p = p.Next {
 	}
-	p = &ListImpl{Value: key}
+	p.Next = &listImpl{Value: key}
 
-	return l
+	return h.Next // h define for situation: l is nil
 }
 
-// todo: review code, optimize
-func (l *ListImpl) Delete(key int) (res List, ok bool) {
-	if l.IsNil() { // nil
-		return MakeEmpty(), false
-	}
-
-	if l.Next == nil { // one node
-		if l.Value == key {
-			return MakeEmpty(), true
-		} else if l.Value != key {
-			return l, false
-		}
-	}
-
-
-	pre, curr := &ListImpl{Next: l}, l
+func (l *listImpl) Delete(key int) (res List, ok bool) {
+	h := &listImpl{Next: l}
+	pre, curr := h, l
 	for ; curr != nil; pre, curr = pre.Next, curr.Next {
 		if curr.Value == key {
 			pre.Next = curr.Next
@@ -77,13 +83,26 @@ func (l *ListImpl) Delete(key int) (res List, ok bool) {
 		}
 	}
 
-	return l, ok
+	res = h.Next
+	if res.IsNil() {
+		res = NewList()
+	}
+
+	return
 }
 
-func (l *ListImpl) IsEmpty() bool {
+func (l *listImpl) IsEqual(li *listImpl) bool {
+	a, b := l, li
+	for ; a != nil && b != nil && a.Value == b.Value; a, b = a.Next, b.Next{
+	}
+
+	return a == nil && b == nil
+}
+
+func (l *listImpl) IsEmpty() bool {
 	return l.IsNil() || (l.Value == 0 && l.Next == nil)
 }
 
-func (l *ListImpl) IsNil() bool {
+func (l *listImpl) IsNil() bool {
 	return l == nil
 }

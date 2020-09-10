@@ -4,14 +4,11 @@
 [![Build Status](https://travis-ci.org/mats9693/study.svg?branch=master)](https://travis-ci.org/mats9693/study)
 [![codecov](https://codecov.io/gh/mats9693/study/branch/master/graph/badge.svg)](https://codecov.io/gh/mats9693/study)
 
-> 记录系统性学习、复习的一些知识。  
+> 记录系统性学习的知识。  
 
 目录：
- - [ ] 数据结构 [data structures last review time]
- - [ ] 设计模式 [design pattern last review time]
- 
-[data structures last review time]:2000.1.01
-[design pattern last review time]:2000.1.01
+ - [ ] 数据结构
+ - [x] 设计模式
 
 ---
 ###### Mario
