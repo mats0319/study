@@ -1,7 +1,7 @@
 package mario
 
 type ClientI interface {
-    Update()
+	Update()
 
-    GetName() string
+	GetName() string
 }

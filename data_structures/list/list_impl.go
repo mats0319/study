@@ -5,8 +5,8 @@ import (
 )
 
 type listImpl struct {
-	Value int
-	Next *listImpl
+	value NodeValue
+	next  *listImpl
 }
 
 var _ List = (*listImpl)(nil)
@@ -19,23 +19,23 @@ func NewList() List {
 	return &listImpl{}
 }
 
-func MakeList(value ...int) List {
+func MakeList(value ...NodeValue) List {
 	res := &listImpl{}
 	p := res
 	for i := range value {
-		p.Next = &listImpl{Value: value[i]}
-		p = p.Next
+		p.next = &listImpl{value: value[i]}
+		p = p.next
 	}
 
-	return res.Next
+	return res.next
 }
 
 func (l *listImpl) Print() string {
 	p := l
 
 	listStr := ""
-	for ; p != nil; p = p.Next {
-		listStr += fmt.Sprintf("%d -> ", p.Value)
+	for ; p != nil; p = p.next {
+		listStr += fmt.Sprintf("%v -> ", p.value)
 	}
 
 	if len(listStr) > 0 {
@@ -45,13 +45,13 @@ func (l *listImpl) Print() string {
 	return fmt.Sprintf("List: %s.", listStr)
 }
 
-func (l *listImpl) Find(key int) int {
+func (l *listImpl) Find(key NodeValue) int {
 	p := l
 
 	index := -1
 	count := 0
-	for ; p != nil; p = p.Next {
-		if key == p.Value {
+	for ; p != nil; p = p.next {
+		if key == p.value {
 			index = count
 			break
 		}
@@ -62,28 +62,28 @@ func (l *listImpl) Find(key int) int {
 	return index
 }
 
-func (l *listImpl) Insert(key int) List {
-	h := &listImpl{Next: l}
+func (l *listImpl) Insert(key NodeValue) List {
+	h := &listImpl{next: l}
 	p := h
-	for ; p.Next != nil; p = p.Next {
+	for ; p.next != nil; p = p.next {
 	}
-	p.Next = &listImpl{Value: key}
+	p.next = &listImpl{value: key}
 
-	return h.Next // h define for situation: l is nil
+	return h.next // h define for situation: l is nil
 }
 
-func (l *listImpl) Delete(key int) (res List, ok bool) {
-	h := &listImpl{Next: l}
+func (l *listImpl) Delete(key NodeValue) (res List, ok bool) {
+	h := &listImpl{next: l}
 	pre, curr := h, l
-	for ; curr != nil; pre, curr = pre.Next, curr.Next {
-		if curr.Value == key {
-			pre.Next = curr.Next
+	for ; curr != nil; pre, curr = pre.next, curr.next {
+		if curr.value == key {
+			pre.next = curr.next
 			ok = true
 			break
 		}
 	}
 
-	res = h.Next
+	res = h.next
 	if res.IsNil() {
 		res = NewList()
 	}
@@ -93,16 +93,24 @@ func (l *listImpl) Delete(key int) (res List, ok bool) {
 
 func (l *listImpl) IsEqual(li *listImpl) bool {
 	a, b := l, li
-	for ; a != nil && b != nil && a.Value == b.Value; a, b = a.Next, b.Next{
+	for ; a != nil && b != nil && a.value == b.value; a, b = a.next, b.next {
 	}
 
 	return a == nil && b == nil
 }
 
 func (l *listImpl) IsEmpty() bool {
-	return l.IsNil() || (l.Value == 0 && l.Next == nil)
+	return l.IsNil() || (l.value == ZeroValue && l.next == nil)
 }
 
 func (l *listImpl) IsNil() bool {
 	return l == nil
+}
+
+func (l *listImpl) Next() List {
+	if l.IsNil() {
+		return nil
+	}
+
+	return l.next
 }

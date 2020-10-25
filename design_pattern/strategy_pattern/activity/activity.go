@@ -5,7 +5,7 @@ type Activity interface {
 }
 
 type ActivityDetails struct {
-	Summary float64
+	Summary        float64
 	ActivityParam1 float64
 	ActivityParam2 float64
 }

@@ -22,7 +22,7 @@ func main() {
 
 	var (
 		result float64
-		err error
+		err    error
 	)
 	switch activityName {
 	case "n":

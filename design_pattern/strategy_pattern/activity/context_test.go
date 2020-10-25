@@ -8,7 +8,7 @@ import (
 func ExampleStrategyContext_CalculateSummary() {
 	sc := &StrategyContext{}
 
-	result, err := sc.CalculateSummary(&ActivityNormal{ActivityDetails{Summary:100}})
+	result, err := sc.CalculateSummary(&ActivityNormal{ActivityDetails{Summary: 100}})
 	if err != nil {
 		log.Fatalln("计算错误：", err)
 	}

@@ -1,7 +1,7 @@
 package mario
 
 type ServerI interface {
-    Notify()
-    Attach(ClientI)
-    Detach(ClientI)
+	Notify()
+	Attach(ClientI)
+	Detach(ClientI)
 }

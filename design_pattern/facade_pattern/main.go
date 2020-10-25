@@ -1,44 +1,44 @@
 package main
 
 import (
-    "fmt"
-    mario "github.com/mats9693/study/design_pattern/facade_pattern/computer"
+	"fmt"
+	mario "github.com/mats9693/study/design_pattern/facade_pattern/computer"
 )
 
 func main() {
-    facade()
+	facade()
 
-    fmt.Println("-------")
+	fmt.Println("-------")
 
-    noFacade()
+	noFacade()
 }
 
 func facade() {
-    var facadeIns = mario.NewComputer()
+	var facadeIns = mario.NewComputer()
 
-    facadeIns.Prepare()
+	facadeIns.Prepare()
 
-    facadeIns.Start()
+	facadeIns.Start()
 
-    facadeIns.Stop()
+	facadeIns.Stop()
 }
 
 func noFacade() {
-    var (
-        CPU = &mario.CPU{}
-        Memory = &mario.Memory{}
-        Driver = &mario.Driver{}
-    )
+	var (
+		CPU    = &mario.CPU{}
+		Memory = &mario.Memory{}
+		Driver = &mario.Driver{}
+	)
 
-    CPU.Prepare()
-    Memory.Prepare()
-    Driver.Prepare()
+	CPU.Prepare()
+	Memory.Prepare()
+	Driver.Prepare()
 
-    Memory.Start()
-    CPU.Start()
-    Driver.Start()
+	Memory.Start()
+	CPU.Start()
+	Driver.Start()
 
-    Driver.Stop()
-    CPU.Stop()
-    Memory.Stop()
+	Driver.Stop()
+	CPU.Stop()
+	Memory.Stop()
 }

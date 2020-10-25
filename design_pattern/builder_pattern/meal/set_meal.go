@@ -8,7 +8,7 @@ type SetMeal struct {
 }
 
 type MakeSetMealI interface {
-    MakeSetMeal() SetMeal
+	MakeSetMeal() SetMeal
 }
 
 type Item struct {
@@ -31,20 +31,20 @@ const (
 )
 
 func (s *SetMeal) MakeFood(name, packaged string) {
-    s.Food = Item{
-        Name: name,
-        Package: packaged,
-    }
+	s.Food = Item{
+		Name:    name,
+		Package: packaged,
+	}
 }
 
 func (s *SetMeal) MakeDrink(name, packaged string) {
-    s.Drink = Item{
-        Name: name,
-        Package: packaged,
-    }
+	s.Drink = Item{
+		Name:    name,
+		Package: packaged,
+	}
 }
 
 func (s *SetMeal) String() string {
-    return fmt.Sprintf("Set Meal: Food %7s packaged with %7s, Drink %7s packaged with %7s",
-        s.Food.Name, s.Food.Package, s.Drink.Name, s.Drink.Package)
+	return fmt.Sprintf("Set Meal: Food %7s packaged with %7s, Drink %7s packaged with %7s",
+		s.Food.Name, s.Food.Package, s.Drink.Name, s.Drink.Package)
 }

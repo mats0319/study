@@ -3,9 +3,9 @@ package mario
 func ExamplePerson_Show() {
 	var (
 		person Finery = &Person{Name: "Mario"}
-		dec1 = &LongSleeves{}
-		dec2 = &Trousers{}
-		dec3 = &Shoes{}
+		dec1          = &LongSleeves{}
+		dec2          = &Trousers{}
+		dec3          = &Shoes{}
 	)
 
 	dec1.Dec.Decorate(person)

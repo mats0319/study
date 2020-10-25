@@ -29,20 +29,20 @@ func (a *ActivityTemplate) Reward() string {
 }
 
 func (a *ActivityTemplate) activityStage(playerName string, passGame bool, percent ...float64) (string, error) {
-    res := ""
-    res += "\n" + a.Start(playerName)
-    if passGame {
-        res += a.Success(playerName)
-    } else {
-        if len(percent) != 1 {
-            return "", errors.New("invalid input param")
-        }
+	res := ""
+	res += "\n" + a.Start(playerName)
+	if passGame {
+		res += a.Success(playerName)
+	} else {
+		if len(percent) != 1 {
+			return "", errors.New("invalid input param")
+		}
 
-        res += a.Failed(playerName, percent[0])
-    }
-    res += a.Reward()
+		res += a.Failed(playerName, percent[0])
+	}
+	res += a.Reward()
 
-    return res, nil
+	return res, nil
 }
 
 type ActivityInstance struct {
@@ -51,7 +51,5 @@ type ActivityInstance struct {
 }
 
 func (a *ActivityInstance) Play(passGame bool, percent ...float64) (string, error) {
-    return  a.activityStage(a.PlayerName, passGame, percent...)
+	return a.activityStage(a.PlayerName, passGame, percent...)
 }
-
-
