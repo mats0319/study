@@ -32,26 +32,26 @@ make new panic print println real recover
 
 > 总计25个，会单独开一个文档，记录从每个关键字引出的知识点。
 
-|keywords|||||
-|---|---|---|---|---|
-break|default|func|interface|select|
-case|defer|go|map|struct|
-chan|else|goto|package|switch|
-const|fallthrough|if|range|type|
-continue|for|import|return|var|
+| keywords |             |        |           |        |
+|----------|-------------|--------|-----------|--------|
+| break    | default     | func   | interface | select |
+ | case     | defer       | go     | map       | struct |
+ | chan     | else        | goto   | package   | switch |
+ | const    | fallthrough | if     | range     | type   |
+ | continue | for         | import | return    | var    |
 
 ### 运算符(operators)
 
 > 总计47个，会单独开一个文档，解释每个运算符的含义和注意事项。
 
-|operators|||||||||
-|---|---|---|---|---|---|---|---|---|
-|+|&|+=|&=|&&|==|!=|(|)|
-|-|&#124;|-=|=|&#124;&#124;|<|<=|[|]|
-|*|^|*=|^=|<-|\>|\>=|{|}|
-|/|<<|/=|<<=|++|=|:=|,|;|
-|%|\>>|%=|\>>=|--|!|...|.|:|
-| |&^| |&^=| | | | | |
+| operators |        |     |      |              |     |     |     |     |
+|-----------|--------|-----|------|--------------|-----|-----|-----|-----|
+| +         | &      | +=  | &=   | &&           | ==  | !=  | (   | )   |
+| -         | &#124; | -=  | =    | &#124;&#124; | <   | <=  | [   | ]   |
+| *         | ^      | *=  | ^=   | <-           | \>  | \>= | {   | }   |
+| /         | <<     | /=  | <<=  | ++           | =   | :=  | ,   | ;   |
+| %         | \>>    | %=  | \>>= | --           | !   | ... | .   | :   |
+|           | &^     |     | &^=  |              |     |     |     |     |
 
 ### 整型字面量(integer literals)
 
@@ -295,12 +295,12 @@ unsafe.Alignof unsafe.Offsetof unsafe.Sizeof
 
 其中与range关键字联合使用的形式，可用于范围表达式(range expression)的类型以及可以获得的值如下：
 
-|type|e.g.|1st value|2nd value|
-|---|---|---|---|
-|array or slice|[3]int *[3]int [ ]int|index|value|
-|string|string|index|rune|
-|map|map[int]string|key|value|
-|channel|(chan int) (<-chan int)|value| |
+| type           | e.g.                    | 1st value | 2nd value |
+|----------------|-------------------------|-----------|-----------|
+| array or slice | [3]int *[3]int [ ]int   | index     | value     |
+| string         | string                  | index     | rune      |
+| map            | map[int]string          | key       | value     |
+| channel        | (chan int) (<-chan int) | value     |           |
 
 对于channel，range会持续从中读数据，直到channel关闭；如果channel为nil，range会一直阻塞
 
@@ -562,17 +562,17 @@ func main() {
 
 接收各类型的变量，返回int，可以接收nil
 
-|call|argument type|result|
-|---|---|---|
-|len(v)|array ( [3]int *[3]int )|array length (3 in example)|
-| |slice ( [ ]int )|slice length|
-| |channel ( chan int )|channel缓冲区的元素个数，无缓冲channel结果为0|
-| |string|string length in bytes|
-| |map ( map[string]int )|map length, number of keys|
+| call   | argument type            | result                         |
+|--------|--------------------------|--------------------------------|
+| len(v) | array ( [3]int *[3]int ) | array length (3 in example)    |
+|        | slice ( [ ]int )         | slice length                   |
+|        | channel ( chan int )     | channel缓冲区的元素个数，无缓冲channel结果为0 |
+|        | string                   | string length in bytes         |
+|        | map ( map[string]int )   | map length, number of keys     |
 ||||
-|cap(v)|array ( [3]int *[3]int )|array length (3 in example)|
-| |slice ( [ ]int )|slice capacity|
-| |channel ( chan int )|channel buffer capacity|
+| cap(v) | array ( [3]int *[3]int ) | array length (3 in example)    |
+|        | slice ( [ ]int )         | slice capacity                 |
+|        | channel ( chan int )     | channel buffer capacity        |
 
 切片的容量是它底层数组的元素数
 

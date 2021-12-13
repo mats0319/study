@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test SSE</title>
+</head>
+<body>
+    open console
+    <script type="text/javascript">
+        var origin = "https://127.0.0.1:9693"
+
+        setTimeout(() => {
+          let http = new XMLHttpRequest();
+          http.open("GET", origin+"/get/cookie?id=mario");
+          http.send();
+        }, 1000)
+
+        setTimeout(() => {
+          let eventSource = new EventSource(origin+"/test/sse", {withCredentials: true});
+
+          eventSource.onopen = (event) => {
+            console.log("> Node: on open.", event);
+          }
+
+          eventSource.onmessage = (event) => {
+            console.log("> Node: on message.", event);
+          }
+
+          eventSource.onerror = (event) => {
+            eventSource.close();
+            console.log("> Node: on error.", event);
+          }
+        }, 2000)
+    </script>
+</body>
+</html>

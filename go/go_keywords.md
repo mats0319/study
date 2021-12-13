@@ -2,13 +2,13 @@
 
 ### 全部关键字列举
 
-|keywords|||||
-|---|---|---|---|---|
-|break|default|func|interface|select|  
-|case|defer|go|map|struct|  
-|chan|else|goto|package|switch|  
-|const|fallthrough|if|range|type|  
-|continue|for|import|return|var|  
+| keywords |             |        |           |        |
+|----------|-------------|--------|-----------|--------|
+| break    | default     | func   | interface | select |  
+| case     | defer       | go     | map       | struct |  
+| chan     | else        | goto   | package   | switch |  
+| const    | fallthrough | if     | range     | type   |  
+| continue | for         | import | return    | var    |  
 
 ### 从关键字引出的知识点
 
@@ -38,13 +38,13 @@ ALL:
    只读和只写多见于函数参数，为了控制该函数仅能读或写该channel
 2. 使用不同状态channel的结果：
 
-| |只读|只写|备注|
-|---|---|---|---|
-|仅声明|死锁|死锁| |
-|初始化（无缓冲）|阻塞|阻塞| |
-|初始化（有缓冲）|无数据时阻塞|缓冲满时阻塞| |
-|已关闭（无缓冲）|返回channel类型的零值[，false]|panic: send on closed channel| |
-|已关闭（有缓冲）|有数据时正常返回|panic: send on closed channel|无数据时，同上|
+|         | 读              | 写                             | 备注      |
+|---------|----------------|-------------------------------|---------|
+| 仅声明     | 死锁             | 死锁                            |         |
+| 初始化-无缓冲 | 阻塞             | 阻塞                            |         |
+| 初始化-有缓冲 | 无数据时阻塞         | 缓冲满时阻塞                        |         |
+| 已关闭-无缓冲 | 返回channel类型的零值 | panic: send on closed channel |         |
+| 已关闭-有缓冲 | 有数据时正常返回       | panic: send on closed channel | 无数据时，同上 |
 
 参考代码：
 
