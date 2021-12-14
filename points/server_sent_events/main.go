@@ -22,13 +22,13 @@ func main() {
     // for test
     {
         http.HandleFunc("/", bindHTMLFile)
-        http.HandleFunc("/get/cookie", getCookieHandler)
+        http.HandleFunc("/cookie", getCookieHandler)
         fmt.Println("> Auto start web page error:", exec.Command("cmd", "/c start "+listenOrigin).Start())
     }
 
     http.HandleFunc("/test/sse", newSSE().testSSEHandler)
     fmt.Println("> Listening at: " + listenOrigin)
-    _ = http.ListenAndServeTLS(listenAddr, "server.crt", "server.key", nil)
+    fmt.Println(http.ListenAndServeTLS(listenAddr, "server.crt", "server.key", nil))
 }
 
 func (s *sse) testSSEHandler(w http.ResponseWriter, r *http.Request) {
