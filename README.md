@@ -6,8 +6,9 @@
 [![codecov](https://codecov.io/gh/mats9693/study/branch/master/graph/badge.svg)](https://codecov.io/gh/mats9693/study)
 
 - 展示github徽章用法（见上方）
-- 记录系统性学习的知识
-- 读书笔记与代码
+- 读书笔记
+- 技术点
+    - server-sent event
 
 ---
 

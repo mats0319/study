@@ -26,6 +26,10 @@
             console.log("> Node: on message.", event);
           }
 
+          eventSource.addEventListener("time", (event) => {
+            console.log("> Node: on 'time' event listener.", event);
+          });
+
           eventSource.onerror = (event) => {
             eventSource.close();
             console.log("> Node: on error.", event);

@@ -11,11 +11,13 @@ type eventData struct {
     data  string
 }
 
-func newEvent(to []string, data string) *event {
+func newEvent(to []string, id, eventName, data string) *event {
     return &event{
         to: to,
         data: &eventData{
-            data: data,
+            id:    id,
+            event: eventName,
+            data:  data,
         },
     }
 }
