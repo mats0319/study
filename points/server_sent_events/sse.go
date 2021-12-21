@@ -15,7 +15,7 @@ func newSSE() *sse {
 	}
 }
 
-func (s *sse) onConnect(userID string, ch chan *eventData) {
+func (s *sse) onConnect(userID string, ch chan *eventSource) {
 	s.clients.Store(userID, ch)
 	s.countClientsNum(fmt.Sprintf("Client '%s' connect", userID))
 }
@@ -25,15 +25,15 @@ func (s *sse) onDisconnect(userID string) {
 	s.countClientsNum(fmt.Sprintf("Client '%s' disconnect", userID))
 }
 
-func (s *sse) addNotify(e *event) {
-	for _, userID := range e.to {
+func (s *sse) pushEvent(e *event) {
+	for _, userID := range e.receivers {
 		chI, ok := s.clients.Load(userID)
 		if !ok {
 			// todo: handle error
 			continue
 		}
 
-		ch, ok := chI.(chan *eventData)
+		ch, ok := chI.(chan *eventSource)
 		if !ok {
 			// todo: handle error
 			continue

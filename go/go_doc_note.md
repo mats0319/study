@@ -35,10 +35,10 @@ make new panic print println real recover
 | keywords |             |        |           |        |
 |----------|-------------|--------|-----------|--------|
 | break    | default     | func   | interface | select |
- | case     | defer       | go     | map       | struct |
- | chan     | else        | goto   | package   | switch |
- | const    | fallthrough | if     | range     | type   |
- | continue | for         | import | return    | var    |
+| case     | defer       | go     | map       | struct |
+| chan     | else        | goto   | package   | switch |
+| const    | fallthrough | if     | range     | type   |
+| continue | for         | import | return    | var    |
 
 ### 运算符(operators)
 
@@ -392,7 +392,7 @@ func f() (err error) {
 	{
 		err := errors.New("new error")
 		if err != nil {
-			return // err is shadowed during return
+			return // 编译报错：err is shadowed during return
 		}
 	}
 

@@ -7,6 +7,10 @@
 - go tool cover -html=coverage.txt 生成网页形式的代码覆盖率报告
 - go build -gcflags -m [file name] 查看编译过程中，优化了哪些代码
 
+## GMP调度模型
+
+
+
 ## 时间类型(```time.Duration```)
 
 ```go 

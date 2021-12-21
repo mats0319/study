@@ -19,11 +19,10 @@ var (
 )
 
 func main() {
-	// for test
 	{
 		http.HandleFunc("/", bindHTMLFile)
-		http.HandleFunc("/cookie", getCookieHandler)
-		fmt.Println("> Auto start web page error:", exec.Command("cmd", "/c start "+listenOrigin).Start())
+		http.HandleFunc("/cookie", testCookieHandler)
+		fmt.Println("> Open web page failed, error:", exec.Command("cmd", "/c start "+listenOrigin).Start())
 	}
 
 	http.HandleFunc("/test/sse", newSSE().testSSEHandler)
@@ -39,7 +38,7 @@ func (s *sse) testSSEHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Access-Control-Allow-Credentials", "true") // for cookie
-	// for sse
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -57,42 +56,45 @@ func (s *sse) testSSEHandler(w http.ResponseWriter, r *http.Request) {
 		clientID = claimsIns.ClientID
 	}
 
-	// register client
-	ch := make(chan *eventData)
+	ch := make(chan *eventSource)
+	defer close(ch)
 
 	s.onConnect(clientID, ch)
-	defer func() {
-		s.onDisconnect(clientID)
-	}()
+	defer s.onDisconnect(clientID)
 
-	notify := r.Context().Done()
-	go func() {
-		<-notify
-		s.onDisconnect(clientID)
-	}()
+	exitEventGenerator := make(chan struct{})
+	defer close(exitEventGenerator)
+	go s.generateEvent([]string{clientID}, exitEventGenerator)
 
-	// Event generator
-	{
-		go func() {
-			for {
-				eventName := ""
-				timestamp := time.Now().Unix()
-				if timestamp%2 == 0 {
-					eventName = "time"
-				}
-
-				s.addNotify(newEvent([]string{clientID}, "", eventName, fmt.Sprintf("timestamp - %d", timestamp)))
-
-				time.Sleep(time.Second * 3)
-			}
-		}()
-	}
-
+ALL:
 	for {
-		data := <-ch
-		_, _ = fmt.Fprint(w, data.format())
+		select {
+		case <-r.Context().Done():
+			break ALL // client disconnect
+		case data, ok := <-ch:
+			if !ok {
+				break ALL // ch closed
+			}
 
-		flusher.Flush()
+			_, _ = fmt.Fprint(w, data.format())
+
+			flusher.Flush()
+		}
+	}
+}
+
+func (s *sse) generateEvent(clientIDs []string, exit chan struct{}) {
+	for {
+		select {
+		case _, ok := <-exit:
+			if !ok {
+				return
+			}
+		case <-time.After(3 * time.Second):
+			s.pushEvent(newEvent(clientIDs, "", "", fmt.Sprintf("timestamp - %d", time.Now().Unix())))
+		case <-time.After(5 * time.Second):
+			s.pushEvent(newEvent(clientIDs, "", "time", fmt.Sprintf("timestamp - %d", time.Now().Unix())))
+		}
 	}
 }
 
@@ -110,7 +112,7 @@ func bindHTMLFile(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, dir+"/html/index.html")
 }
 
-func getCookieHandler(w http.ResponseWriter, r *http.Request) {
+func testCookieHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	params := strings.Split(r.RequestURI, "?id=")

@@ -9,9 +9,3 @@
 - 读书笔记
 - 技术点
     - server-sent event
-
----
-
-###### Mario
-
-I've been pretending to work hard, but you're really growing up.
