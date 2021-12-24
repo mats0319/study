@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var jwtSecret = []byte("mario")
+
 type claims struct {
 	ClientID string `json:"clientID"`
 	jwt.StandardClaims

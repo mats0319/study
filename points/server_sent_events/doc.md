@@ -9,9 +9,10 @@
 
 1. 基础sse功能
 2. https
-3. jwt token验证
-4. 通过jwt token传递client id
-5. 通知多人
+3. go读写cookie
+4. [jwt token验证](https://github.com/golang-jwt/jwt)
+5. 通过jwt token传递client id
+6. 通知多人
 
 ## 使用手册
 
