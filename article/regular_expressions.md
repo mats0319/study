@@ -29,9 +29,3 @@
 - ( )： 匹配与提取信息，可以嵌套使用
     - (a|b)： a或b
     - (?:pattern)： 匹配但不提取，多用于使用或("|")字符组合模式的场景，例如"abc(?:d|de)" <=> "abcd|abcde"
-
----
-
-###### Mario
-
-I've been pretending to work hard, but you're really growing up.

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "./rpc_impl";
+
+package user_proto;
+
+message loginReq {
+  string userName = 1;
+  string password = 2;
+}
+
+message loginRes {
+  bool isSuccess = 1;
+  string errMsg = 2;
+}
+
+service IUser {
+  rpc login(loginReq) returns (loginRes);
+}

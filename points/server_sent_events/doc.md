@@ -33,8 +33,9 @@ openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out serv
 
 ### 启动
 
+> make sure you're at 'study/points/server_sent_events/' dir
+
 ```powershell 
-# make sure you're at 'server_sent_events'
 go mod tidy
 go run .
 ```

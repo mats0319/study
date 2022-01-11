@@ -5,6 +5,20 @@
 
 ## 目录
 
+- 文章
 - 读书笔记
+- go语言
+    - 官方文档阅读笔记
+    - go mod
+    - 关键字
+    - 运算符
+    - 结构体方法的接收者
+    - 小知识
 - 技术点
     - server-sent event
+    - go + eth
+    - rpc demo
+- 使用记录
+    - github使用记录
+    - go测试框架使用记录
+    - travis持续集成+codecov代码覆盖率使用记录
