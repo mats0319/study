@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    mario "github.com/mats9693/study/books/978-7-302-16206-3/facade_pattern/computer"
+    "github.com/mats9693/study/books/978-7-302-16206-3/facade_pattern/computer"
 )
 
 func main() {

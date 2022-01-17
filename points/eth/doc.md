@@ -1,19 +1,29 @@
 # Go + eth
 
-## 介绍
+## 功能介绍
 
-本节主要以go语言为主，额外涉及到编译sol合约等问题
-
-1. 使用go语言向eth链发交易
+1. 使用go语言与eth链交互
+    1. 向链上发交易（包括部署合约、调用合约函数）
+    2. 订阅合约log
+    3. 调用合约view、pure函数（无gas消耗，不需要私钥）
 2. 一些eth链的功能测试：
-    1. 将多笔交易打成一笔，更节省gas费
+    1. 将多笔交易打包成一笔，更节省gas费
     2. 跨合约调用需要消耗更多的gas
 
-todo：拟添加扫描链的代码
+tips：
 
-## 体验
+1. 该部分仅包含go代码，保证能够正常调用，若想运行，需自行编写和部署智能合约并相应调整go代码
 
-当前代码即可体验，其中infura key、地址(0xe955)是我的
+## 测试地址
+
+提供两个我的地址，有一点ropsten测试链的ETH，无主网交易历史
+
+1. 0x0f770Af04b67bB0A8e7ba9A9f9273E85553E4C4C
+    1. 私钥：094be1db3580f2878cf7f9bf862cfd5c564c2776f518905c1c40445611ae3e40
+    2. 助记词：until swarm manage erosion kidney clutch later blossom planet enforce forum bicycle
+2. 0xD095De8Fb4E2da680D113284bcC4E0222bbAa6a2
+    1. 私钥：1e742e12b1602fb8278890ebf567132ef338c0213a1d34812a29e028b3ac72b2
+    2. 助记词：link awful unlock tilt trip meadow attract theme vendor doctor daughter mirror
 
 ## require
 
