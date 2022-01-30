@@ -54,11 +54,12 @@ func main() {
             log.Fatalln(err) // exit
         case vLog := <-logs:
             // core data
-            fmt.Println("> Receive a new event: ", matchEventName(vLog.Topics[0].Hex()))
+            fmt.Printf("> --- Receive a new event: %s ---\n", matchEventName(vLog.Topics[0].Hex()))
             fmt.Println("> Log Data:(parsed)    ", parseContractEvents(vLog.Topics[0].Hex(), vLog.Data))
             fmt.Println("> Block Number:        ", vLog.BlockNumber)
             fmt.Println("> Block Hash:          ", vLog.BlockHash.Hex())
             fmt.Println("> Transaction Hash:    ", vLog.TxHash.Hex())
+            fmt.Println()
 
             // some other data
             fmt.Println("> Contract Address:    ", vLog.Address.Hex())
@@ -67,6 +68,7 @@ func main() {
             fmt.Println("> Transaction Index:   ", vLog.TxIndex)
             fmt.Println("> Log Index in Block:  ", vLog.Index)
             fmt.Println("> Is Removed:          ", vLog.Removed)
+            fmt.Println()
         }
     }
 }
@@ -108,12 +110,24 @@ func printEventTopics(topics []common.Hash) []string {
 func parseContractEvents(hash string, data []byte) (res string) {
     switch hash {
     case "0x37bf82b399445377adc74da9876029ab2e1a0de7fedb054ecbf811afb4f6abe5": // TestEventName
-        payload := &EventParams_TestEventName{}
-        err = contractABI.Unpack(payload, "TestEventName", data)
+        var payload []interface{}
+        payload, err = contractABI.Unpack("TestEventName", data)
         utils.CheckError(err, "unpack params on event: TestEventName failed")
-        res = payload.String()
+        utils.CheckBool(len(payload) == 2, "unexpected params amount")
+
+        event := &EventParams_TestEventName{}
+
+        paramOne, ok := payload[0].(common.Address)
+        utils.CheckBool(ok, "type assert failed on event: TestEventName, param index: 0")
+        event.Admin = paramOne
+
+        paramTwo, ok := payload[1].(uint8)
+        utils.CheckBool(ok, "type assert failed on event: TestEventName, param index: 1")
+        event.InvokeTimes = paramTwo
+
+        res = event.String()
     default:
-        res = "unknown event name: " + hash
+        res = "unknown event hash: " + hash
         log.Println(res)
     }
 

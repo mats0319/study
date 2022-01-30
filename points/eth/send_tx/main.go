@@ -3,6 +3,7 @@ package main
 import (
     "context"
     "crypto/ecdsa"
+    "github.com/ethereum/go-ethereum"
     "github.com/ethereum/go-ethereum/accounts/abi"
     "github.com/ethereum/go-ethereum/common"
     "github.com/ethereum/go-ethereum/core/types"
@@ -17,6 +18,7 @@ import (
 const (
     ethNodeAddr            = "http://192.168.2.57:8545"
     defaultGasLimit uint64 = 5000000
+    defaultGasPrice        = 0
     chainID                = 9876
 
     address    = "0xe95534f7d843f71873c768049b5fc5cbbb850ec8"
@@ -25,7 +27,7 @@ const (
     // in truffle, the long code
     contractByteCodeForDeploy = "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101fd806100606000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c80632973d0be14610030575b600080fd5b61003861003a565b005b6001600060148282829054906101000a900460ff166100599190610122565b92506101000a81548160ff021916908360ff1602179055507f37bf82b399445377adc74da9876029ab2e1a0de7fedb054ecbf811afb4f6abe560008054906101000a900473ffffffffffffffffffffffffffffffffffffffff16600060149054906101000a900460ff166040516100d19291906100f9565b60405180910390a1565b6100e481610159565b82525050565b6100f38161018b565b82525050565b600060408201905061010e60008301856100db565b61011b60208301846100ea565b9392505050565b600061012d8261018b565b91506101388361018b565b92508260ff0382111561014e5761014d610198565b5b828201905092915050565b60006101648261016b565b9050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b600060ff82169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212206b3d2a4c2cb57bd7d09ef4018209eb7ea9ef9fc5e33b40c25843c8cb6085159864736f6c63430008060033"
 
-    contractAddress    = "0x8a8CcB904ECf84B4ea43AEfCA1e6847640fB7f4c"
+    contractAddressStr = "0x8a8CcB904ECf84B4ea43AEfCA1e6847640fB7f4c"
     contractABIStr     = `[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"admin","type":"address"},{"indexed":false,"internalType":"uint8","name":"invokeTimes","type":"uint8"}],"name":"TestEventName","type":"event"},{"inputs":[],"name":"testFuncEmitEvent","outputs":[],"stateMutability":"nonpayable","type":"function"}]`
     contractMethodName = "testFuncEmitEvent"
 )
@@ -39,8 +41,9 @@ var (
     tx       *types.Transaction
     signedTx *types.Transaction
 
-    contractABI abi.ABI
-    txData      []byte
+    contractABI     abi.ABI
+    contractAddress = common.HexToAddress(contractAddressStr)
+    txData          []byte
 
     err error
 )
@@ -112,8 +115,26 @@ func invokeContractFunction() {
     txData, err = contractABI.Pack(contractMethodName)
     utils.CheckError(err, "pack params failed")
 
+    // pre-execute tx
+    _, err = ethConn.EstimateGas(context.Background(), ethereum.CallMsg{
+        From:      common.HexToAddress(address),
+        To:        &contractAddress,
+        GasFeeCap: big.NewInt(defaultGasPrice),
+        GasTipCap: big.NewInt(defaultGasPrice),
+        Data:      txData,
+    })
+    utils.CheckError(err, "tx exec failed")
+
     // build tx and sign
-    tx = types.NewTransaction(nonce, common.HexToAddress(contractAddress), big.NewInt(0), defaultGasLimit, nil, txData)
+    tx = types.NewTx(&types.LegacyTx{
+        Nonce:    nonce,
+        GasPrice: big.NewInt(defaultGasPrice),
+        Gas:      defaultGasLimit,
+        To:       &contractAddress,
+        Value:    big.NewInt(0),
+        Data:     txData,
+    })
+
     signedTx, err = types.SignTx(tx, types.NewEIP155Signer(big.NewInt(chainID)), privKey)
     utils.CheckError(err, "sign tx failed")
 

@@ -10,3 +10,9 @@ func CheckError(err error, msg string) {
         log.Fatalln(errors.Wrap(err, msg))
     }
 }
+
+func CheckBool(ok bool, msg string) {
+    if !ok {
+        log.Fatalln(msg)
+    }
+}

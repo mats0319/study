@@ -3,6 +3,8 @@
 [![GoDoc](https://godoc.org/github.com/mats9693/study?status.svg)](https://godoc.org/github.com/mats9693/study)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mats9693/study)](https://goreportcard.com/report/github.com/mats9693/study)
 
+主要使用语言：go
+
 ## 目录
 
 - 文章
