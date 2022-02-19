@@ -123,49 +123,64 @@ const (
 
 #### defer
 
-1. defer需要注册才能执行，后注册的defer先执行，defer会在函数退出前执行，参考代码：
+1. defer函数在return之后执行，参考代码
 
-```go 
-func f() {
-    defer print(1)
-	defer print(2)
+   ```go 
+   func f() int {
+       i := 10
+       defer func() {
+           i++
+       }()
+       return i // func.return = i = 10
+       // defer: i = 10+1 = 11, 但函数的返回值已经赋完值了 
+   }
+   
+   // f() = 10
+   ```
 
-	return
-	defer print(3) // 没有注册，所以不会执行
-}
+2. defer需要注册才能执行，后注册的defer先执行，defer会在函数退出前执行，参考代码：
 
-// output: 21
-```
+   ```go 
+   func f() {
+       defer print(1)
+       defer print(2)
+   
+       return
+       defer print(3) // 没有注册，所以不会执行
+   }
+   
+   // output: 21
+   ```
 
-1. 每个defer关键字只会把一个函数“压栈”，并且会立刻计算函数的输入参数，参考代码：
+3. 每个defer关键字只会把一个函数“压栈”，并且会立刻计算函数的输入参数，参考代码：
 
-```go 
-type chainCall struct {
-	n int
-}
+   ```go 
+   type chainCall struct {
+       n int
+   }
+   
+   func (c *chainCall) set(value int) *chainCall {
+       c.n = value
+       print("set value: ", value)
+   
+       return c
+   }
+   
+   func f() {
+       cc := &chainCall{}
+   
+       a := 1
+       b := 2
+       defer cc.set(1).set(2).set(a+b) // 这里压栈的函数是：cc.set(3)，之前的函数会被执行
+   
+       a += 10
+       cc.set(a)
+       
+       // output: 1 2 11 3
+   }
+   ```
 
-func (c *chainCall) set(value int) *chainCall {
-	c.n = value
-	print("set value: ", value)
-
-	return c
-}
-
-func f() {
-    cc := &chainCall{}
-
-	a := 1
-	b := 2
-	defer cc.set(1).set(2).set(a+b) // 这里压栈的函数是：cc.set(3)
-
-	a += 10
-	cc.set(a)
-	
-	// output: 1 2 11 3
-}
-```
-
-1. defer可以结合内置函数recover，处理panic，详情参考recover函数声明与注释
+4. defer可以结合内置函数recover，处理panic，详情参考recover函数声明与注释
 
 #### else
 
@@ -182,7 +197,11 @@ func f() {
 
 #### func
 
-声明和定义函数
+1. 函数可以返回多个值
+2. 函数输出参数可以命名，然后当做常规变量使用，就像输入参数一样
+    1. 具名的输出参数，会在函数开始时，被初始化为对应类型的零值
+    2. 若函数有多个输出参数，要么全部命名、要么全部不命名，不允许只为部分输出参数命名
+    3. 拥有具名输出参数的函数，`return`可以不带参数
 
 #### go
 
@@ -214,7 +233,7 @@ func f() {
 
 #### range
 
-可用于```for...range...```句式
+可用于```for...range...```句式，遍历`array`、`slice`、`string`、`map`、`channel`
 
 #### return
 
@@ -230,7 +249,27 @@ select可能阻塞当前goroutine
 
 #### switch
 
-条件判断
+1. 类似C语言的switch：`switch [expression] {}`
+2. 把一连串`if-else`写成switch：`switch {case [expression]: // do sth}`
+    1. 第一个表达式值为`true`的`case`会被执行
+3. 类型转换(type switch)
+    ```go 
+    // from official doc
+    var t interface{}
+    t = functionOfSomeType()
+    switch t := t.(type) {
+        default:
+            fmt.Printf("unexpected type %T\n", t)     // %T prints whatever type t has
+        case bool:
+            fmt.Printf("boolean %t\n", t)             // t has type bool
+        case int:
+            fmt.Printf("integer %d\n", t)             // t has type int
+        case *bool:
+            fmt.Printf("pointer to boolean %t\n", *t) // t has type *bool
+        case *int:
+            fmt.Printf("pointer to integer %d\n", *t) // t has type *int
+    }
+    ```
 
 #### type
 
