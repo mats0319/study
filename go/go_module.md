@@ -1,4 +1,4 @@
-# Go mod
+# Go module
 
 ## 初始化
 
