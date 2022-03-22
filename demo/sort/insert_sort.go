@@ -1,18 +1,18 @@
 package sort
 
-func InsertSort(intSlice []int) {
+func insertSort(intSlice []int) {
 	if len(intSlice) < 2 {
 		return
 	}
 
 	insertSlice := make([]int, len(intSlice))
-	for i := range insertSlice {
+	for i := range intSlice {
 		position := 0
-		for insertSlice[position] <= intSlice[i] && position < i {
+		for intSlice[i] > insertSlice[position] && position < i { // find place
 			position++
 		}
 
-		for index := i; index > position && index > 1; index-- {
+		for index := i; index > position && index-1 >= 0; index-- { // move elements
 			insertSlice[index] = insertSlice[index-1]
 		}
 

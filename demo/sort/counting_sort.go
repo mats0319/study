@@ -2,7 +2,7 @@ package sort
 
 import "fmt"
 
-func CountingSort(intSlice []int) {
+func countingSort(intSlice []int) {
 	if len(intSlice) < 2 {
 		return
 	}
@@ -18,31 +18,30 @@ func CountingSort(intSlice []int) {
 		}
 	}
 
-	length := max - min + 1
+	length := max - min + 1 // calc counting slice length
 
 	if (min < 0 && length < max) || length > 10000 { // overflow or too long counting slice
 		fmt.Println("unmatched method, too long span(between 'min' and 'max' value of slice)")
+		quickSort(intSlice)
 		return
 	}
 
-	count := make([]int, length)
+	counting := make([]int, length)
 
 	offset := min
 
-	for i := range intSlice {
-		count[intSlice[i]-offset]++
+	for i := range intSlice { // build counting slice
+		counting[intSlice[i]-offset]++
 	}
 
-	resIndex := 0
+	countingIndex := 0
 	for i := range intSlice {
-		for count[resIndex] == 0 {
-			resIndex++
+		for counting[countingIndex] == 0 { // skip empty and used elements in counting slice
+			countingIndex++
 		}
 
-		count[resIndex]--
+		counting[countingIndex]--
 
-		intSlice[i] = resIndex + offset
+		intSlice[i] = countingIndex + offset // recover value according to 'counting index' and 'offset'
 	}
-
-	return
 }
