@@ -39,6 +39,9 @@ func benchmarkTestWrapper(b *testing.B, sortFunc func([]int)) {
 	}
 }
 
+// generateRandomIntSlice generate random int slice, you can set 'max length' and 'max value' of slice
+//   @param maxLength: max length of slice, min length of slice is 10
+//   @param maxValue: max value of slice element, in fact, slice[i] is random in the area [-'max value', 'max value')
 func generateRandomIntSlice(maxLength int, maxValue int) []int {
 	if maxLength <= 10 {
 		maxLength = 11
