@@ -32,7 +32,7 @@ tips：
 [reference](https://goethereumbook.org/smart-contract-compile)
 
 1. ```.sol```智能合约编译工具、部署代码生成工具
-    1. 也可以使用其他工具编译，如truffle
+    1. 也可以使用其他工具编译，如truffle，hardhat
 2. ```abigen```：根据合约代码生成go调用代码的工具
 
 命令：

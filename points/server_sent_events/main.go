@@ -13,7 +13,7 @@ var (
 	listenOrigin = "https://" + listenAddr
 
 	cookieValidPeriod = 86400
-	jwtTokenName      = "jwtToken"
+	cookieKey         = "clientID"
 )
 
 func main() {
@@ -42,15 +42,9 @@ func testCookieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken, err := generateToken(params[1])
-	if err != nil {
-		http.Error(w, "Generate JWT token failed", http.StatusInternalServerError)
-		return
-	}
-
 	http.SetCookie(w, &http.Cookie{
-		Name:   jwtTokenName,
-		Value:  jwtToken,
+		Name:   cookieKey,
+		Value:  params[1],
 		MaxAge: cookieValidPeriod,
 	})
 

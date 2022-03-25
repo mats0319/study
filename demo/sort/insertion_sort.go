@@ -1,6 +1,6 @@
 package sort
 
-func insertSort(intSlice []int) {
+func insertionSort(intSlice []int) {
 	if len(intSlice) < 2 {
 		return
 	}

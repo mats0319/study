@@ -30,18 +30,7 @@ func (s *sse) testSSEHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	// verify jwt token and parse 'client id' from it
-	clientID := ""
-	{
-		jwtToken := getCookie(r, jwtTokenName)
-		claimsIns, err := parseToken(jwtToken)
-		if err != nil {
-			http.Error(w, "Parse JWT token failed", http.StatusInternalServerError)
-			return
-		}
-
-		clientID = claimsIns.ClientID
-	}
+	clientID := getCookie(r, cookieKey)
 
 	ch := make(chan *eventSource)
 	defer close(ch)

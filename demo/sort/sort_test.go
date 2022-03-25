@@ -5,7 +5,7 @@ import (
 )
 
 func TestInsertSort(t *testing.T) {
-	testWrapper(t, insertSort)
+	testWrapper(t, insertionSort)
 }
 
 func TestCountingSort(t *testing.T) {
@@ -20,8 +20,12 @@ func TestMergeSort(t *testing.T) {
 	testWrapper(t, mergeSort)
 }
 
+func TestHeapSort(t *testing.T) {
+	testWrapper(t, heapSort)
+}
+
 func BenchmarkInsertSort(b *testing.B) {
-	benchmarkTestWrapper(b, insertSort)
+	benchmarkTestWrapper(b, insertionSort)
 }
 
 func BenchmarkCountingSort(b *testing.B) {
@@ -34,4 +38,8 @@ func BenchmarkQuickSort(b *testing.B) {
 
 func BenchmarkMergeSort(b *testing.B) {
 	benchmarkTestWrapper(b, mergeSort)
+}
+
+func BenchmarkHeapSort(b *testing.B) {
+	benchmarkTestWrapper(b, heapSort)
 }
