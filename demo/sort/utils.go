@@ -11,8 +11,8 @@ func init() {
 	rand.Seed(time.Now().Unix())
 }
 
-func testWrapper(t *testing.T, sortFunc func([]int)) {
-	intSlice := generateRandomIntSlice(100, 100)
+func testWrapper(t *testing.T, sortFunc func([]int), specialValues ...int) {
+	intSlice := generateRandomIntSlice(100, 100, specialValues...)
 	originData := deepCopyIntSlice(intSlice)
 
 	sortFunc(intSlice)
@@ -42,14 +42,20 @@ func benchmarkTestWrapper(b *testing.B, sortFunc func([]int)) {
 // generateRandomIntSlice generate random int slice, you can set 'max length' and 'max value' of slice
 //   @param maxLength: max length of slice, min length of slice is 10
 //   @param maxValue: max value of slice element, in fact, slice[i] is random in the area [-'max value', 'max value')
-func generateRandomIntSlice(maxLength int, maxValue int) []int {
-	if maxLength <= 10 {
-		maxLength = 11
+func generateRandomIntSlice(maxLength int, maxValue int, specialValues ...int) []int {
+	if maxLength < 10 {
+		maxLength = 10
 	}
 
-	intSlice := make([]int, rand.Intn(maxLength-10)+10) // length: [10, 'max length')
-	for i := range intSlice {
-		intSlice[i] = rand.Intn(maxValue*2) - maxValue // item value: [-'max value', 'max value')
+	intSlice := make([]int, rand.Intn(maxLength-9)+10) // length: [10, 'max length']
+
+	i := 0
+	for ; i < len(intSlice) && i < len(specialValues); i++ { // special values if given
+		intSlice[i] = specialValues[i]
+	}
+
+	for ; i < len(intSlice); i++ { // random values
+		intSlice[i] = rand.Intn(maxValue*2+1) - maxValue // item value: [-'max value', 'max value']
 	}
 
 	return intSlice
