@@ -90,7 +90,7 @@ func radixSortMSD_1(intSlice []int) {
     maxDigit := 0
     for _, v := range intSlice {
         digit := 0
-        for splitDigit := 10; v > 0; splitDigit *= 10 {
+        for splitDigit := 1; v > 0; splitDigit *= 10 {
             v /= splitDigit
             digit++
         }
@@ -159,7 +159,7 @@ func radixSortMSD_2(intSlice []int) {
     maxDigit := 0
     for _, v := range intSlice {
         digit := 0
-        for splitDigit := 10; v > 0; splitDigit *= 10 {
+        for splitDigit := 1; v > 0; splitDigit *= 10 {
             v /= splitDigit
             digit++
         }

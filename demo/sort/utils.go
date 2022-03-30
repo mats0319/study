@@ -31,7 +31,7 @@ func benchmarkTestWrapper(b *testing.B, sortFunc func([]int)) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 
-		intSlice := generateRandomIntSlice(10000, 1000)
+		intSlice := generateRandomIntSlice(10000, 100000)
 
 		b.StartTimer()
 
@@ -40,14 +40,16 @@ func benchmarkTestWrapper(b *testing.B, sortFunc func([]int)) {
 }
 
 // generateRandomIntSlice generate random int slice, you can set 'max length' and 'max value' of slice
-//   @param maxLength: max length of slice, min length of slice is 10
+//   @param length: length of slice, min is 10
 //   @param maxValue: max value of slice element, in fact, slice[i] is random in the area [-'max value', 'max value')
-func generateRandomIntSlice(maxLength int, maxValue int, specialValues ...int) []int {
-	if maxLength < 10 {
-		maxLength = 10
+//   @param specialValues: special values in test, for each method, it may need some special case when test,
+//                         more values than 'length' will be ignored
+func generateRandomIntSlice(length int, maxValue int, specialValues ...int) []int {
+	if length < 10 {
+		length = 10
 	}
 
-	intSlice := make([]int, rand.Intn(maxLength-9)+10) // length: [10, 'max length']
+	intSlice := make([]int, length) // length: big(10, 'length')
 
 	i := 0
 	for ; i < len(intSlice) && i < len(specialValues); i++ { // special values if given

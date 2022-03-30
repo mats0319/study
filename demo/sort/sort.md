@@ -10,7 +10,7 @@
 分类：
 
 1. LSD(least significant digital)：从最低位（个位）开始排序
-2. MSD(most significant digital)：从最高位（待定）开始排序
+2. MSD(most  significant digital)：从最高位（根据测试数据）开始排序
 
 实现：
 
