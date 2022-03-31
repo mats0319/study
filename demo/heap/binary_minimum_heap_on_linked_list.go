@@ -36,17 +36,9 @@ func (h *binaryMinimumHeapOnLinkedList) Push(v int) {
 
 	root := h.root()
 
-	left := root
+	left, leftDepth := root.getLeftLeafAndDepth()
 
-	leftDepth := 0
-	for ; left.left != nil; left = left.left {
-		leftDepth++
-	}
-
-	rightDepth := 0
-	for right := root; right.right != nil; right = right.right {
-		rightDepth++
-	}
+	_, rightDepth := root.getRightLeafAndDepth()
 
 	next := &listNode{value: v}
 
@@ -87,20 +79,16 @@ func (h *binaryMinimumHeapOnLinkedList) Pop() (int, error) {
 
 	root := h.root()
 
-	left := root
-
-	leftDepth := 0
-	for ; left.left != nil; left = left.left {
-		leftDepth++
-	}
-
-	right := root
-	rightDepth := 0
-	for ; right.right != nil; right = right.right {
-		rightDepth++
+	if root.isLeaf() {
+		h.pre.left = nil
+		return root.value, nil
 	}
 
 	popValue := root.value
+
+	left, leftDepth := root.getLeftLeafAndDepth()
+
+	right, rightDepth := root.getRightLeafAndDepth()
 
 	if leftDepth == rightDepth { // full tree
 		left = right
@@ -109,14 +97,24 @@ func (h *binaryMinimumHeapOnLinkedList) Pop() (int, error) {
 
 		left.parent.right = nil
 		left.prev.next = nil
-	} else {
+	} else { // not full
+		isLeftChild := true // if 'left' is its parent's left child
 		for left.next != nil {
 			left = left.next
+			isLeftChild = !isLeftChild
 		}
 
 		root.value = left.value // 'left' is last node now
 
-		left.parent.left = nil
+		if isLeftChild {
+			left.parent.left = nil
+		} else {
+			left.parent.right = nil
+		}
+
+		if left.prev != nil {
+			left.prev.next = nil
+		}
 	}
 
 	h.shiftDown()
@@ -170,4 +168,24 @@ func (h *binaryMinimumHeapOnLinkedList) root() *listNode {
 
 func (n *listNode) isLeaf() bool { // no situation: has right child but not have left child
 	return n.left == nil
+}
+
+func (n *listNode) getLeftLeafAndDepth() (*listNode, int) {
+	left := n
+	depth := 0
+	for ; left.left != nil; left = left.left {
+		depth++
+	}
+
+	return left, depth
+}
+
+func (n *listNode) getRightLeafAndDepth() (*listNode, int) {
+	right := n
+	depth := 0
+	for ; right.right != nil; right = right.right {
+		depth++
+	}
+
+	return right, depth
 }

@@ -64,6 +64,10 @@ func BenchmarkHeapSort(b *testing.B) {
 	benchmarkTestWrapper(b, heapSort)
 }
 
+func BenchmarkHeapSort_2(b *testing.B) {
+	benchmarkTestWrapper(b, heapSortOnLinkedList)
+}
+
 func BenchmarkRadixSort_LSD_1(b *testing.B) {
 	benchmarkTestWrapper(b, radixSort)
 }
