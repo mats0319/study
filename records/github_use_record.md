@@ -1,7 +1,8 @@
 # Github使用记录
 
 > 本文记录了笔者学习使用git和github的过程。  
-> 推荐一个git图文讲解+实际练习的[网站](https://learngitbranching.js.org/)，[github地址](https://github.com/pcottle/learnGitBranching)
+> 推荐一个git图文讲解+实际练习的[网站](https://learngitbranching.js.org/)  
+> [github地址](https://github.com/pcottle/learnGitBranching)
 
 ---
 
@@ -17,7 +18,6 @@ git stash clear
 git stash  
 git stash pop [stash@{[n]}]  
 git pull [repository name] [branch name]  
-（**pull**是**fetch+merge**的语法糖）
 
 ##### 个人习惯
 
