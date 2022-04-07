@@ -1,26 +1,21 @@
 package sort
 
 import (
-	"math/rand"
+	"github.com/mats9693/utils/support"
 	"sort"
 	"testing"
-	"time"
 )
 
-func init() {
-	rand.Seed(time.Now().Unix())
-}
-
 func testWrapper(t *testing.T, sortFunc func([]int), specialValues ...int) {
-	intSlice := generateRandomIntSlice(100, 100, specialValues...)
-	originData := deepCopyIntSlice(intSlice)
+	intSlice := support.GenerateRandomIntSlice(100, 100, specialValues...)
+	originData := support.DeepCopyIntSlice(intSlice)
 
 	sortFunc(intSlice)
 
-	sortedSlice := deepCopyIntSlice(originData)
+	sortedSlice := support.DeepCopyIntSlice(originData)
 	sort.Ints(sortedSlice)
 
-	if !compareOnIntSlice(sortedSlice, intSlice) {
+	if !support.CompareOnIntSlice(sortedSlice, intSlice) {
 		t.Logf("> Test insert sort failed.\n\torigin data: %v\n\texpected: %v\n\tget     : %v\n",
 			originData, sortedSlice, intSlice)
 		t.Fail()
@@ -31,59 +26,10 @@ func benchmarkTestWrapper(b *testing.B, sortFunc func([]int)) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 
-		intSlice := generateRandomIntSlice(10000, 100000)
+		intSlice := support.GenerateRandomIntSlice(10000, 100000)
 
 		b.StartTimer()
 
 		sortFunc(intSlice)
 	}
-}
-
-// generateRandomIntSlice generate random int slice, you can set 'max length' and 'max value' of slice
-//   @param length: length of slice, min is 10
-//   @param maxValue: max value of slice element, in fact, slice[i] is random in the area [-'max value', 'max value')
-//   @param specialValues: special values in test, for each method, it may need some special case when test,
-//                         more values than 'length' will be ignored
-func generateRandomIntSlice(length int, maxValue int, specialValues ...int) []int {
-	if length < 10 {
-		length = 10
-	}
-
-	intSlice := make([]int, length) // length: big(10, 'length')
-
-	i := 0
-	for ; i < len(intSlice) && i < len(specialValues); i++ { // special values if given
-		intSlice[i] = specialValues[i]
-	}
-
-	for ; i < len(intSlice); i++ { // random values
-		intSlice[i] = rand.Intn(maxValue*2+1) - maxValue // item value: [-'max value', 'max value']
-	}
-
-	return intSlice
-}
-
-func deepCopyIntSlice(data []int) []int {
-	res := make([]int, len(data))
-	for i := range data {
-		res[i] = data[i]
-	}
-
-	return res
-}
-
-func compareOnIntSlice(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	isEqual := true
-	for i := range a {
-		if a[i] != b[i] {
-			isEqual = false
-			break
-		}
-	}
-
-	return isEqual
 }
