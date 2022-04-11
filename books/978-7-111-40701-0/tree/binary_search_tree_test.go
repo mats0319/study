@@ -13,7 +13,7 @@ func TestNewBST(t *testing.T) {
 	bstIns := newBST(data)
 
 	if !isBST(bstIns) {
-		t.Logf("data: %v\ntree: %s\n", data, printBST(bstIns))
+		t.Logf("data: %v\ntree: \n%s", data, printBST(bstIns))
 		t.Fail()
 	}
 }
@@ -34,46 +34,47 @@ func TestBinarySearchTree_Find(t *testing.T) {
 	for i := range values {
 		res := bstIns.Find(values[i])
 		if res != expected[i] {
-			t.Logf("index: %d, find: %d\n\ttree: %s\n\twant\n\t%T\n\tget: %T\n",
+			t.Logf("index: %d, find: %d\n\ttree: \n%s\n\twant\n\t%T\n\tget: %T\n",
 				i, values[i], printBST(bstIns), expected[i], res)
 			t.Fail()
 		}
 	}
 }
 
-type bstNodeWrapper struct {
-	isNull bool
-	value  int
-}
-
 func printBST(tree *binarySearchTreeImpl) string {
-	nodeList := []*bstNode{tree.root}
-	values := make([]*bstNodeWrapper, 0)
-	for len(nodeList) > 0 {
-		node := nodeList[0]
-		nodeList = nodeList[1:]
-
-		if node == nil {
-			values = append(values, &bstNodeWrapper{isNull: true})
-		} else {
-			values = append(values, &bstNodeWrapper{value: node.value})
-			nodeList = append(nodeList, node.left, node.right)
-		}
+	if tree == nil {
+		return ""
 	}
 
+	nodeList := []*bstNode{tree.root}
 	res := ""
-	for i := range values {
-		if values[i].isNull {
-			res += "null "
-		} else {
-			res += fmt.Sprintf("%d ", values[i].value)
+	for len(nodeList) > 0 {
+		nextNodeList := make([]*bstNode, 0, len(nodeList)*2)
+
+		for len(nodeList) > 0 {
+			node := nodeList[0]
+			nodeList = nodeList[1:]
+
+			if node == nil {
+				res += "null "
+			} else {
+				res += fmt.Sprintf("%d ", node.value)
+				nextNodeList = append(nextNodeList, node.left, node.right)
+			}
 		}
+
+		res += "\n"
+		nodeList = nextNodeList
 	}
 
 	return res
 }
 
 func isBST(tree *binarySearchTreeImpl) bool {
+	if tree == nil {
+		return true
+	}
+
 	values := dfs(tree.root)
 	backup := support.DeepCopyIntSlice(values)
 
