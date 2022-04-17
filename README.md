@@ -1,6 +1,6 @@
 # 学习笔记
 
-[![GoDoc](https://godoc.org/github.com/mats9693/study?status.svg)](https://godoc.org/github.com/mats9693/study)
+[![Go Reference](https://pkg.go.dev/badge/github.com/mats9693/study.svg)](https://pkg.go.dev/github.com/mats9693/study)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mats9693/study)](https://goreportcard.com/report/github.com/mats9693/study)
 
 主要使用语言：go
