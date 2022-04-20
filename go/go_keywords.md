@@ -6,7 +6,7 @@
 |----------|---------------|--------|-----------|---------------------|
 | break    | default       | func   | interface | select              |  
 | case ×   | defer         | go     | map       | struct              |  
-| chan     | else  ×       | goto   | package × | switch              |  
+| chan     | else ×        | goto   | package × | switch              |  
 | const    | fallthrough × | if     | range     | type                |  
 | continue | for           | import | return    | var                 |  
 
@@ -30,8 +30,8 @@ ALL:
 
 ## chan
 
-1. 可以用来声明和定义`channel`，`channel`包含读写、只读、只写三种类型，  
-   1. 只读和只写多见于函数输入参数位置，为了控制该函数权限
+1. 可以用来声明和定义`channel`，`channel`包含读写、只读、只写三种类型，
+    1. 只读和只写多见于函数输入参数位置，为了控制该函数权限
 2. 可以使用内置函数`close`关闭`channel`
 3. 读写不同状态`channel`的结果：
 
@@ -64,7 +64,7 @@ const (
 
 ## continue
 
-1. `continue`语句终止执行最近for循环的后续语句  
+1. `continue`语句终止执行最近for循环的后续语句
 2. `continue`语句可以带标签，标签只能出现在for语句的上一行，且该语句的语句列表包含continue语句， 带标签的continue语句表示跳过标签表示的for循环的后续语句，执行下一次循环。参考代码：
 
 ```go 
@@ -109,12 +109,12 @@ ContinueLabel:
 
 1. `defer`函数的参数会被立刻求值
 2. `defer`函数在`return`语句为返回值赋值之后、函数退出之前执行
-   1. `defer`函数可能改变当前函数的返回值
+    1. `defer`函数可能改变当前函数的返回值
 3. 如果`defer`的函数为`nil`，则执行时panic
 4. `defer`函数自己的返回值会被丢弃
 5. `defer`语句会压栈（注册）一个函数：
-   1. 如果`defer`表达式为一串链式调用，则之前的调用函数会立刻执行，仅最后一个函数会被压栈
-   2. 后注册的`defer`函数先执行
+    1. 如果`defer`表达式为一串链式调用，则之前的调用函数会立刻执行，仅最后一个函数会被压栈
+    2. 后注册的`defer`函数先执行
 6. 若显式调用`os.Exit()`，则注册的`defer`函数不会执行
 
 参考代码：
@@ -239,22 +239,24 @@ func f() (err error) {
 
 ## select
 
-1. select与switch结构上相似，但不支持fallthrough关键字  
+1. select与switch结构上相似，但不支持fallthrough关键字
 2. select语句要求每一个`case`都是通信操作(communication operations)
 
 select语句执行过程：
 
-1. 计算所有case的表达式，所有副作用(side effects)正常执行；接收语句左侧的赋值语句（包括短变量声明）不会执行。
-1. 选择分支：
-   1. 如果有可继续的通信，则通过统一的伪随机(uniform pseudo-random)选择一个
-   1. 如果有default case，执行default case
-   1. 如果不存在以上情况，则select语句阻塞，直到有至少一个可继续的通信（空白的select语句会一直阻塞）
-1. 执行准备：
-   1. 除非选择的是default case，否则就要执行对应的通信操作
-   1. 如果选中case的表达式为赋值语句，则赋值语句正常执行
-1. 执行选中case的语句块
+1. 计算所有case子句中，**符合条件的表达式**，所有副作用(side effects)正常执行；接收语句左侧的赋值语句（包括短变量声明）不会执行。
+    1. 符合条件的表达式：指发送或接收操作的额外表达式，即channel操作符右侧的表达式，  
+       举例：`ch <- <-ch1`/`<- getValue()`中的`<-ch1`/`getValue()`，会在下一步*选择分支*之前计算  
+       进一步，如果`<-ch1`阻塞，则整个select阻塞
+2. 选择分支：
+    1. 若存在可继续的通信（case），则通过统一的伪随机(uniform pseudo-random)选择一个
+    2. 若不存在可继续的通信（case），则选择default语句执行；若无default子句，则select语句阻塞，直到有一个case可以继续或死锁（全部goroutine阻塞）
+3. 执行准备：
+    1. 执行选中case子句的表达式（case到分号之间的部分）
+    2. 若选中default子句，直接进入下一步
+4. 执行选中case的语句块
 
-以下代码包含“副作用正常执行”、“随机选择一个case执行”以及“全部计算case表达式、只执行选中case的赋值”的演示，参考代码：
+以下代码包含**执行读写channel的case表达式，且副作用正常执行**、**随机选择一个case执行**以及**全部计算case表达式、只执行选中case的赋值**的演示，参考代码：
 
 ```go 
 func main() {
