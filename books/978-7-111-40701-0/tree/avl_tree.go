@@ -1,7 +1,5 @@
 package tree
 
-import "sort"
-
 type avlTreeImpl struct {
 	root *avlNode
 }
@@ -19,11 +17,13 @@ type avlNode struct {
 var _ avlTree = (*avlTreeImpl)(nil)
 
 func newAVLTree(data ...int) *avlTreeImpl {
-	sort.Ints(data)
+	ins := &avlTreeImpl{}
 
-	return &avlTreeImpl{
-		root: buildAVL(data),
+	for i := range data {
+		ins.Insert(data[i])
 	}
+
+	return ins
 }
 
 func (t *avlTreeImpl) Find(v int) bool {
@@ -100,8 +100,6 @@ func (t *avlTreeImpl) Delete(v int) {
 	}
 
 	// find 'v', recurse move its higher child to current node(value only) and del the last leaf node
-	pBackup := p
-	preBackup := pre
 	for !p.isLeaf() {
 		leftHeight := -1
 		if p.left != nil {
@@ -137,7 +135,7 @@ func (t *avlTreeImpl) Delete(v int) {
 		pre.right = nil
 	}
 
-	t.checkBalance(pBackup, preBackup)
+	t.checkBalance(t.root, nil) // todo: optimize, not check all tree
 }
 
 func (t *avlTreeImpl) checkBalance(node *avlNode, parent *avlNode) {
@@ -169,13 +167,13 @@ func (t *avlTreeImpl) checkBalance(node *avlNode, parent *avlNode) {
 func (t *avlTreeImpl) doBalance(node *avlNode, parent *avlNode) {
 	if node.balanceFactor > 1 {
 		if node.left.balanceFactor < 0 {
-			t.rotateLeft(node.left, parent)
+			t.rotateLeft(node.left, node)
 		}
 
 		t.rotateRight(node, parent)
 	} else if node.balanceFactor < -1 {
 		if node.right.balanceFactor > 0 {
-			t.rotateRight(node.right, parent)
+			t.rotateRight(node.right, node)
 		}
 
 		t.rotateLeft(node, parent)
@@ -189,21 +187,16 @@ func (t *avlTreeImpl) rotateRight(node *avlNode, parent *avlNode) {
 	if parent == nil {
 		t.root = l
 	} else {
-		if parent == node {
+		if parent.left == node {
 			parent.left = l
 		} else {
 			parent.right = l
 		}
 	}
 
-	// if 'l' has right child, move it to 'node'.left
-	if l.right != nil {
-		r := l.right
+	// make l.right to l.node.right
+	node.left = l.right
 
-		node.left = r
-	}
-
-	// maintain relation between 'node' and 'l'
 	l.right = node
 }
 
@@ -221,39 +214,14 @@ func (t *avlTreeImpl) rotateLeft(node *avlNode, parent *avlNode) {
 		}
 	}
 
-	// if 'r' has left child, move it to 'node'.right
-	if r.left != nil {
-		l := r.left
+	// make r.left to r.node.left
+	node.right = r.left
 
-		node.right = l
-	}
-
-	// maintain relation between 'node' and 'r'
 	r.left = node
 }
 
 func (n *avlNode) isLeaf() bool {
 	return n.left == nil && n.right == nil
-}
-
-func buildAVL(data []int) *avlNode {
-	if len(data) < 1 {
-		return nil
-	} else if len(data) == 1 {
-		return &avlNode{value: data[0]}
-	}
-
-	length := len(data)
-
-	middle := length/2 + length%2
-
-	root := &avlNode{value: data[middle]}
-
-	root.left = buildAVL(data[:middle])
-
-	root.right = buildAVL(data[middle+1:])
-
-	return root
 }
 
 func big(a, b int) (res int) {
