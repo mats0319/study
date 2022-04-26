@@ -1,8 +1,8 @@
 # go官方文档阅读笔记
 
-文档版本：
+文档及版本：
 
-1. go语言编程规范：2021.2.10
+1. go语言编程规范(go language specification)：2021.2.10
 2. effective go：go 1.17版本
 
 ## 词汇要素(lexical elements)
