@@ -2,7 +2,7 @@ package sort
 
 import (
 	"fmt"
-	"github.com/mats9693/study/demo/heap"
+	"github.com/mats9693/study/books/978-7-111-40701-0/heap"
 )
 
 func heapSort(intSlice []int) {

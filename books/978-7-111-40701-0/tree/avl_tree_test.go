@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewAVLTree(t *testing.T) {
-	data := support.GenerateRandomIntSlice(20, 100)
+	data := support.GenerateRandomIntSlice(1000, 1000)
 
 	avlTreeIns := newAVLTree(data...)
 
@@ -22,20 +22,18 @@ func TestAvlTreeImpl_Find(t *testing.T) {
 
 	avlTreeIns := newAVLTree(data...)
 
-	res := make([]bool, 0, 2)
-	res = append(res, avlTreeIns.Find(0))
-	res = append(res, avlTreeIns.Find(200))
-
+	values := []int{0, 200}
 	expected := []bool{true, false}
 
-	if len(res) != len(expected) {
-		t.Logf("unexpected res amount")
+	if len(values) != len(expected) {
+		t.Logf("unexpected amount")
 		t.Fail()
 	}
 
-	for i := range res {
-		if res[i] != expected[i] {
-			t.Logf("test avl tree find failed, index: %d\n\twant: %t\n\tget: %t\n", i, expected[i], res[i])
+	for i := range values {
+		_, ok := avlTreeIns.Find(values[i])
+		if ok != expected[i] {
+			t.Logf("test avl tree find failed, index: %d\n\twant: %t\n\tget: %t\n", i, expected[i], ok)
 			t.Fail()
 		}
 	}
@@ -52,10 +50,10 @@ func TestAvlTreeImpl_Insert(t *testing.T) {
 	avlTreeIns := newAVLTree(data...)
 
 	for i := 0; i < 10; i++ {
-		avlTreeIns.Insert(200+i)
+		avlTreeIns.Insert(200+i, 200+i)
 	}
 
-	if !avlTreeIns.Find(200) {
+	if _, ok := avlTreeIns.Find(200); !ok {
 		t.Logf("test avl tree insert failed")
 		t.Fail()
 	}
@@ -77,7 +75,7 @@ func TestAvlTreeImpl_Delete(t *testing.T) {
 		avlTreeIns.Delete(specialValues[i])
 	}
 
-	if avlTreeIns.Find(200) {
+	if _, ok := avlTreeIns.Find(200); ok {
 		t.Logf("test avl tree delete failed")
 		t.Fail()
 	}

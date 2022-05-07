@@ -1,12 +1,11 @@
 package tree
 
-import "sort"
-
 type binarySearchTreeImpl struct {
 	root *bstNode
 }
 
 type bstNode struct {
+	key   int
 	value int
 
 	left  *bstNode
@@ -16,47 +15,69 @@ type bstNode struct {
 var _ binarySearchTree = (*binarySearchTreeImpl)(nil)
 
 func newBST(data []int) *binarySearchTreeImpl {
-	sort.Ints(data)
+	bstIns := &binarySearchTreeImpl{}
 
-	return &binarySearchTreeImpl{
-		root: buildBST(data),
+	for i := range data {
+		bstIns.insert(data[i], data[i])
 	}
+
+	return bstIns
 }
 
-func (t *binarySearchTreeImpl) Find(v int) bool {
-	isExist := false
-
+func (t *binarySearchTreeImpl) Find(key int) (value int, ok bool) {
 	p := t.root
 	for p != nil {
-		if v == p.value {
-			isExist = true
+		if key == p.key {
+			value = p.value
+			ok = true
 			break
-		} else if v < p.value {
+		} else if key < p.key {
 			p = p.left
-		} else { // v > p.value
+		} else { // key > p.key
 			p = p.right
 		}
 	}
 
-	return isExist
+	return
 }
 
-func buildBST(data []int) *bstNode {
-	if len(data) < 1 {
-		return nil
-	} else if len(data) == 1 {
-		return &bstNode{value: data[0]}
+func (t *binarySearchTreeImpl) insert(key int, value int) {
+	if t.root == nil {
+		t.root = &bstNode{
+			key:   key,
+			value: value,
+		}
+
+		return
 	}
 
-	length := len(data)
+	p := t.root
+	for {
+		if key == p.key {
+			p.value = value
+			break
+		} else if key < p.key {
+			if p.left == nil {
+				p.left = &bstNode{
+					key:   key,
+					value: value,
+				}
 
-	middle := length/2 + length%2
+				break
+			}
 
-	root := &bstNode{value: data[middle]}
+			p = p.left
+		} else { // key > p.key
+			if p.right == nil {
+				p.right = &bstNode{
+					key: key,
+					value: value,
+				}
 
-	root.left = buildBST(data[:middle])
+				break
+			}
 
-	root.right = buildBST(data[middle+1:])
-
-	return root
+			p = p.right
+		}
+	}
 }

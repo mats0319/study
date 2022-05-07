@@ -1,11 +1,11 @@
 package tree
 
 type binarySearchTree interface {
-	Find(int) bool
+	Find(key int) (value int, ok bool)
 }
 
-type avlTree interface {
-	Find(int) bool
-	Insert(int)
-	Delete(int)
+type balancedBST interface {
+	Find(key int) (value int, ok bool)
+	Insert(key int, value int)
+	Delete(key int)
 }

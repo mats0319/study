@@ -5,15 +5,9 @@ import "fmt"
 // 1. 变量地址的改变，并不意味着变量被重新分配，此处可能要结合“函数数据段堆栈”概念理解（即函数在内存中的样子，好像是这么叫吧）
 // 举例来说，我有两个结构体s1, s2，先让 s = s1，再让 s = s2；此时s变量显然没有被重新分配，而打印s变量的地址发生了变化（不能是空结构体）
 func main() {
-	c := make(chan bool)
-	m := make(map[string]string)
-	go func() {
-		m["1"] = "a" // First conflicting access.
-		c <- true
-	}()
-	m["2"] = "b" // Second conflicting access.
-	<-c
-	for k, v := range m {
-		fmt.Println(k, v)
-	}
+	array := [5]int{}
+
+	var arr *[5]int = &array
+
+	fmt.Println(len(arr), len(*arr))
 }
