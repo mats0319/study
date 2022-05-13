@@ -1,18 +1,18 @@
 package tree
 
 type avlTreeImpl struct {
-	root *avlNode
+	root *avlTreeNode
 }
 
-type avlNode struct {
+type avlTreeNode struct {
 	key   int
 	value int
 
 	height        int
 	balanceFactor int
 
-	left  *avlNode
-	right *avlNode
+	left  *avlTreeNode
+	right *avlTreeNode
 }
 
 var _ balancedBST = (*avlTreeImpl)(nil)
@@ -46,7 +46,7 @@ func (t *avlTreeImpl) Find(key int) (value int, ok bool) {
 
 func (t *avlTreeImpl) Insert(key int, value int) {
 	if t.root == nil {
-		t.root = &avlNode{
+		t.root = &avlTreeNode{
 			key:   key,
 			value: value,
 		}
@@ -61,7 +61,7 @@ func (t *avlTreeImpl) Insert(key int, value int) {
 			break
 		} else if key < p.key {
 			if p.left == nil {
-				p.left = &avlNode{
+				p.left = &avlTreeNode{
 					key:   key,
 					value: value,
 				}
@@ -72,7 +72,7 @@ func (t *avlTreeImpl) Insert(key int, value int) {
 			p = p.left
 		} else { // key > p.key
 			if p.right == nil {
-				p.right = &avlNode{
+				p.right = &avlTreeNode{
 					key:   key,
 					value: value,
 				}
@@ -94,7 +94,7 @@ func (t *avlTreeImpl) Delete(key int) {
 
 	p := t.root
 	isLeftChild := false
-	var pre *avlNode
+	var pre *avlTreeNode
 	for !p.isLeaf() {
 		if key == p.key {
 			break
@@ -153,7 +153,7 @@ func (t *avlTreeImpl) Delete(key int) {
 	t.checkBalance(t.root, nil)
 }
 
-func (t *avlTreeImpl) checkBalance(node *avlNode, parent *avlNode) {
+func (t *avlTreeImpl) checkBalance(node *avlTreeNode, parent *avlTreeNode) {
 	if node == nil {
 		return
 	}
@@ -179,7 +179,7 @@ func (t *avlTreeImpl) checkBalance(node *avlNode, parent *avlNode) {
 	}
 }
 
-func (t *avlTreeImpl) doBalance(node *avlNode, parent *avlNode) {
+func (t *avlTreeImpl) doBalance(node *avlTreeNode, parent *avlTreeNode) {
 	if node.balanceFactor > 1 {
 		if node.left.balanceFactor < 0 {
 			t.rotateLeft(node.left, node)
@@ -195,7 +195,7 @@ func (t *avlTreeImpl) doBalance(node *avlNode, parent *avlNode) {
 	}
 }
 
-func (t *avlTreeImpl) rotateRight(node *avlNode, parent *avlNode) {
+func (t *avlTreeImpl) rotateRight(node *avlTreeNode, parent *avlTreeNode) {
 	l := node.left
 
 	// maintain relation with parent
@@ -209,13 +209,13 @@ func (t *avlTreeImpl) rotateRight(node *avlNode, parent *avlNode) {
 		}
 	}
 
-	// make l.right to l.node.right
+	// make l.right to node.right
 	node.left = l.right
 
 	l.right = node
 }
 
-func (t *avlTreeImpl) rotateLeft(node *avlNode, parent *avlNode) {
+func (t *avlTreeImpl) rotateLeft(node *avlTreeNode, parent *avlTreeNode) {
 	r := node.right
 
 	// maintain relation with parent
@@ -229,13 +229,13 @@ func (t *avlTreeImpl) rotateLeft(node *avlNode, parent *avlNode) {
 		}
 	}
 
-	// make r.left to r.node.left
+	// make r.left to node.left
 	node.right = r.left
 
 	r.left = node
 }
 
-func (n *avlNode) isLeaf() bool {
+func (n *avlTreeNode) isLeaf() bool {
 	return n.left == nil && n.right == nil
 }
 

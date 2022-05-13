@@ -91,10 +91,10 @@ func printAVLTree(tree *avlTreeImpl) string {
 		return ""
 	}
 
-	nodeList := []*avlNode{tree.root}
+	nodeList := []*avlTreeNode{tree.root}
 	res := ""
 	for len(nodeList) > 0 {
-		nextNodeList := make([]*avlNode, 0, len(nodeList)*2)
+		nextNodeList := make([]*avlTreeNode, 0, len(nodeList)*2)
 
 		for len(nodeList) > 0 {
 			node := nodeList[0]
@@ -116,10 +116,10 @@ func printAVLTree(tree *avlTreeImpl) string {
 }
 
 func isAVLTree(tree *avlTreeImpl) bool {
-	return isValidNode(tree.root)
+	return isValidAVLTreeNode(tree.root)
 }
 
-func isValidNode(node *avlNode) bool {
+func isValidAVLTreeNode(node *avlTreeNode) bool {
 	if node == nil {
 		return true
 	} else if node.isLeaf() {
@@ -128,8 +128,8 @@ func isValidNode(node *avlNode) bool {
 		return true
 	}
 
-	isLeftValid := isValidNode(node.left)
-	isRightValid := isValidNode(node.right)
+	isLeftValid := isValidAVLTreeNode(node.left)
+	isRightValid := isValidAVLTreeNode(node.right)
 
 	if !isLeftValid || !isRightValid {
 		return false
