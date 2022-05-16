@@ -26,7 +26,71 @@ const (
 
 var _ balancedBST = (*redBlackTreeImpl)(nil)
 
-func printRedBlackTree(tree *redBlackTreeImpl) string {
+func isValidRedBlackTreeNode2(node *redBlackTreeNode) bool {
+	// layer-order traversal, calc black node amount on road, until leaf node
+	// 'node' is valid only all amounts last step are equal
+	if node.color == red {
+		return false
+	}
+
+	type redBlackTreeNodeWrapper struct {
+		node            *redBlackTreeNode
+		blackNodeAmount int
+	}
+
+	rootBlackNodeAmount := -1 // <0: unsigned
+
+	isValid := true
+	nodeList := []*redBlackTreeNodeWrapper{{node: node, blackNodeAmount: 1}}
+	for len(nodeList) > 0 {
+		n := nodeList[0]
+		nodeList = nodeList[1:]
+
+		if n.node.left == nil && n.node.right == nil { // leaf node
+			if rootBlackNodeAmount < 0 {
+				rootBlackNodeAmount = n.blackNodeAmount
+			} else if rootBlackNodeAmount != n.blackNodeAmount {
+				isValid = false
+				break
+			}
+
+			continue
+		}
+
+		if n.node.left != nil {
+			blackNodeAmount := n.blackNodeAmount
+			if n.node.left.color == black {
+				blackNodeAmount++
+			} else if n.node.color == red {
+				isValid = false
+				break
+			}
+
+			nodeList = append(nodeList, &redBlackTreeNodeWrapper{
+				node:            n.node.left,
+				blackNodeAmount: blackNodeAmount,
+			})
+		}
+		if n.node.right != nil {
+			blackNodeAmount := n.blackNodeAmount
+			if n.node.right.color == black {
+				blackNodeAmount++
+			} else if n.node.color == red {
+				isValid = false
+				break
+			}
+
+			nodeList = append(nodeList, &redBlackTreeNodeWrapper{
+				node:            n.node.right,
+				blackNodeAmount: blackNodeAmount,
+			})
+		}
+	}
+
+	return isValid
+}
+
+func printRedBlackTree2(tree *redBlackTreeImpl) string {
 	if tree == nil {
 		return ""
 	}
@@ -64,8 +128,14 @@ func newRedBlackTree(data ...int) *redBlackTreeImpl {
 	ins := &redBlackTreeImpl{}
 
 	for i := range data {
+		fmt.Println(data[i], ": ")
+		fmt.Println(printRedBlackTree2(ins))
 		ins.Insert(data[i], data[i])
-		fmt.Println(data[i], ": \n", printRedBlackTree(ins))
+		if !isValidRedBlackTreeNode2(ins.root) {
+			fmt.Println()
+			fmt.Println(printRedBlackTree2(ins))
+			fmt.Println()
+		}
 	}
 
 	return ins
@@ -105,7 +175,6 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 	isLeftChild := false
 	for p != nil {
 		if key == p.key {
-			p.value = value
 			break
 		} else if key < p.key {
 			isLeftChild = true
@@ -120,6 +189,7 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 
 	// 'key' is exist
 	if p != nil {
+		p.value = value
 		return
 	}
 
@@ -143,15 +213,13 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 	}
 
 	// 4. parent.color is 'red'
-	pp := parent.parent
-	isLeftChildP := false
+	r := parent.parent
+	isLeftChildP := r.left == parent
 	hasBrotherNode := false
-	if pp.left == p && pp.right == nil {
-		hasBrotherNode = true
-		isLeftChildP = true
-	} else if pp.left == nil && pp.right == p {
-		hasBrotherNode = true
-		isLeftChildP = false
+	if isLeftChildP {
+		hasBrotherNode = r.right != nil
+	} else {
+		hasBrotherNode = r.left != nil
 	}
 
 	// 4.2. if 'parent' do not have brother node, tree now degenerate to a linked list
@@ -159,70 +227,119 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 		if isLeftChildP {
 			if !isLeftChild { // LR situation
 				t.rotateLeft(parent)
-				parent = pp.left // according to 'isLeftChildP'
+				parent = r.left // according to 'isLeftChildP'
 			}
 
-			pp.setColor(red)
+			r.setColor(red)
 			parent.setColor(black)
-			t.rotateRight(pp)
+			t.rotateRight(r)
 		} else {
 			if isLeftChild {
 				t.rotateRight(parent)
-				parent = pp.right // according to 'isLeftChildP'
+				parent = r.right // according to 'isLeftChildP'
 			}
 
-			pp.setColor(red)
+			r.setColor(red)
 			parent.setColor(black)
-			t.rotateLeft(pp)
+			t.rotateLeft(r)
 		}
-	}
 
-	// 4.3. if 'parent' have brother node
-	pp.setColor(red)
-	parent.setColor(black)
-	if isLeftChildP {
-		pp.left.setColor(black)
-	} else {
-		pp.right.setColor(black)
-	}
-
-	// 4.3.1.
-	if pp == t.root {
-		pp.setColor(black)
 		return
 	}
 
+	// 4.3. if 'parent' have brother node
+	r.setColor(red)
+	r.left.setColor(black)
+	r.right.setColor(black)
+
 	// 4.3.2.
-	if pp.parent.color == black {
+	if r == t.root {
+		r.setColor(black)
 		return
 	}
 
 	// 4.3.3.
-	n := pp
+	if r.parent.color == black {
+		return
+	}
+
+	// 4.3.4.2.
+	n := r
 	p = n.parent
-	r := p.parent
+	r = p.parent
 
 	isLeftChildP = r.left == p
 	isLeftChild = p.left == n
 
-	if isLeftChildP {
-		if !isLeftChild {
-			t.rotateLeft(p)
-			p = r.left // according to 'isLeftChildP'
+	if (isLeftChildP && r.right.color == black) || (!isLeftChildP && r.left.color == black) {
+		if isLeftChildP {
+			if !isLeftChild {
+				t.rotateLeft(p)
+				p = r.left // according to 'isLeftChildP'
+			}
+
+			r.setColor(red)
+			p.setColor(black)
+			t.rotateRight(r)
+		} else {
+			if isLeftChild {
+				t.rotateRight(p)
+				p = r.right // according to 'isLeftChildP'
+			}
+
+			r.setColor(red)
+			p.setColor(black)
+			t.rotateLeft(r)
 		}
 
-		r.setColor(red)
-		p.setColor(black)
-		t.rotateRight(r)
-	} else {
-		if isLeftChild {
-			t.rotateRight(p)
-			p = r.right // according to 'isLeftChildP'
+		return
+	}
+
+	// 4.3.4.3
+	for {
+		p.setColor(red)
+		p.left.setColor(black)
+		p.right.setColor(black)
+
+		n = p
+		p = r
+		r = p.parent
+
+		if p == t.root {
+			p.setColor(black)
+			break
 		}
 
-		r.setColor(red)
-		p.setColor(black)
-		t.rotateLeft(r)
+		if r.color == black {
+			break
+		}
+
+		isLeftChildP = r.left == p
+		isLeftChild = p.left == n
+
+		if (isLeftChildP && r.right.color == black) || (!isLeftChildP && r.left.color == black) {
+			if isLeftChildP {
+				if !isLeftChild {
+					t.rotateLeft(p)
+					p = r.left // according to 'isLeftChildP'
+				}
+
+				r.setColor(red)
+				p.setColor(black)
+				t.rotateRight(r)
+			} else {
+				if isLeftChild {
+					t.rotateRight(p)
+					p = r.right // according to 'isLeftChildP'
+				}
+
+				r.setColor(red)
+				p.setColor(black)
+				t.rotateLeft(r)
+			}
+
+			break
+		}
 	}
 }
 
