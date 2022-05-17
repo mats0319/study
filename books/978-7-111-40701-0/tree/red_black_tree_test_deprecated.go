@@ -36,6 +36,9 @@ func isRedBlackTree(tree *redBlackTreeImpl) bool {
 func isValidRedBlackTreeNode(node *redBlackTreeNode) bool {
 	// layer-order traversal, calc black node amount on road, until leaf node
 	// 'node' is valid only all amounts last step are equal
+	if node.color == red {
+		return false
+	}
 
 	type redBlackTreeNodeWrapper struct {
 		node            *redBlackTreeNode
@@ -65,10 +68,13 @@ func isValidRedBlackTreeNode(node *redBlackTreeNode) bool {
 			blackNodeAmount := n.blackNodeAmount
 			if n.node.left.color == black {
 				blackNodeAmount++
+			} else if n.node.color == red {
+				isValid = false
+				break
 			}
 
 			nodeList = append(nodeList, &redBlackTreeNodeWrapper{
-				node: n.node.left,
+				node:            n.node.left,
 				blackNodeAmount: blackNodeAmount,
 			})
 		}
@@ -76,10 +82,13 @@ func isValidRedBlackTreeNode(node *redBlackTreeNode) bool {
 			blackNodeAmount := n.blackNodeAmount
 			if n.node.right.color == black {
 				blackNodeAmount++
+			} else if n.node.color == red {
+				isValid = false
+				break
 			}
 
 			nodeList = append(nodeList, &redBlackTreeNodeWrapper{
-				node: n.node.right,
+				node:            n.node.right,
 				blackNodeAmount: blackNodeAmount,
 			})
 		}

@@ -55,9 +55,12 @@ func (t *avlTreeImpl) Insert(key int, value int) {
 	}
 
 	p := t.root
+	needCheckBalance := true
 	for {
 		if key == p.key {
 			p.value = value
+			needCheckBalance = false
+
 			break
 		} else if key < p.key {
 			if p.left == nil {
@@ -84,37 +87,37 @@ func (t *avlTreeImpl) Insert(key int, value int) {
 		}
 	}
 
-	t.checkBalance(t.root, nil)
+	if needCheckBalance {
+		t.checkBalance(t.root, nil)
+	}
 }
 
 func (t *avlTreeImpl) Delete(key int) {
-	if t.root == nil {
-		return
-	}
-
-	p := t.root
-	isLeftChild := false
+	// find 'key'
+	p := t.root // t.root = nil is ok
 	var pre *avlTreeNode
-	for !p.isLeaf() {
-		if key == p.key {
-			break
-		} else if key < p.key {
-			pre = p
+	for p != nil && key != p.key {
+		pre = p
+
+		if key < p.key {
 			p = p.left
-			isLeftChild = true
 		} else { // key > p.key
-			pre = p
 			p = p.right
-			isLeftChild = false
 		}
 	}
 
 	// 'key' is not exist
-	if key != p.key {
+	if p == nil {
 		return
 	}
 
-	// 'key' exist, recurse move its higher child to current node(value only) and del the last leaf node
+	// 'key' exist, and tree has only one node, just empty the tree and no necessary to check balance
+	if t.root == p {
+		t.root = nil
+		return
+	}
+
+	// 'key' exist, recurse move value of its higher child to current node until leaf node, del the leaf node
 	for !p.isLeaf() {
 		leftHeight := -1
 		if p.left != nil {
@@ -131,20 +134,13 @@ func (t *avlTreeImpl) Delete(key int) {
 		if leftHeight > rightHeight {
 			p.value = p.left.value
 			p = p.left
-			isLeftChild = true
 		} else {
 			p.value = p.right.value
 			p = p.right
-			isLeftChild = false
 		}
 	}
 
-	if t.root == p {
-		t.root = nil
-		return
-	}
-
-	if isLeftChild {
+	if pre.left == p {
 		pre.left = nil
 	} else {
 		pre.right = nil
