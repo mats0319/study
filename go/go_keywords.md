@@ -207,11 +207,11 @@ goto语句需要一个标签，然后将控制转移到对应标签的位置，�
 
 ## map
 
-映射
+map的`key`可以是任意类型，只要定义了`==`运算符
 
 ## range
 
-可用于```for...range...```句式，遍历`array`、`slice`、`string`、`map`、`channel`类型
+可用于`for...range...`句式，遍历`array`、`slice`、`string`、`map`、`channel`类型
 
 | type           | e.g.                    | 1st value | 2nd value |
 |----------------|-------------------------|-----------|-----------|
@@ -319,7 +319,8 @@ func addOne(slice []int, index int) int {
 
 1. 类似C语言的switch：`switch [expression] {}`
 2. 把一连串`if-else`写成switch：`switch {case [expression]: // do sth}`
-    1. 第一个表达式值为`true`的`case`会被执行
+    1. 要求`expression`值为`bool`类型
+    2. 第一个表达式值为`true`的`case`会被执行
 3. 类型转换(type switch)
     ```go 
     // from official doc
@@ -349,6 +350,7 @@ type S struct {
 }
 
 func (s *S) ExportedFunc() {
+   s.nonExportedFunc()
 }
 
 func (s *S) nonExportedFunc() {
