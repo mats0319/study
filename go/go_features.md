@@ -1,4 +1,44 @@
-# 数据竞争
+# 模糊测试(fuzzing)
+
+版本：go 1.18
+
+模糊测试是一种自动化测试，它会不断地使用不同输入参数调用程序，以期发现bug
+
+go fuzzing使用覆盖指导(coverage guidance)，智能遍历被测试的代码
+
+## 结构
+
+模糊测试函数声明：`func FuzzXxx(*testing.F)`
+
+示例代码：
+
+```go 
+1.  func FuzzFoo(f *testing.F) {
+2.      f.Add(5, "hello")
+3.      f.Fuzz(func(t *testing.T, i int, s string) {
+4.          out, err := Foo(i, s)
+5.          if err != nil && out != "" {
+6.              t.Errorf("%q, %v", out, err)
+7.          }
+8.      })
+9.  }
+```
+
+定义：
+
+1. fuzz test：模糊测试函数，如上方示例代码
+2. fuzz target：模糊测试目标，如上方代码，第三行，使用`*testing.F`调用的`Fuzz()`函数
+3. fuzzing arguments：模糊参数，如上方代码，第三行，作为输入参数的函数，除了第一项(`*testing.T`)以外的输入参数（即上例中的`i int, s string`）
+4. seed corpus addition：种子附加库，如上方代码第二行，`Add(5, "hello")`
+
+## 编写测试
+
+要求：
+
+1. 模糊测试函数，其声明必须严格遵守上一节的函数声明：`func FuzzXxx(*testing.F)`
+2. 模糊测试函数，需要在`*_test.go`文件内运行
+
+# 数据竞争(data race)
 
 数据竞争(data race)，产生条件：
 
