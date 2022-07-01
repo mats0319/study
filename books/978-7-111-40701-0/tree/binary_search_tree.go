@@ -70,7 +70,7 @@ func (t *binarySearchTreeImpl) insert(key int, value int) {
 		} else { // key > p.key
 			if p.right == nil {
 				p.right = &bstNode{
-					key: key,
+					key:   key,
 					value: value,
 				}
 

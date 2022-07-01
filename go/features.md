@@ -1,4 +1,4 @@
-# 模糊测试(fuzzing)
+# 模糊测试(fuzzing test), (draft)
 
 版本：go 1.18
 
@@ -37,6 +37,10 @@ go fuzzing使用覆盖指导(coverage guidance)，智能遍历被测试的代码
 
 1. 模糊测试函数，其声明必须严格遵守上一节的函数声明：`func FuzzXxx(*testing.F)`
 2. 模糊测试函数，需要在`*_test.go`文件内运行
+
+# GMP调度模型(draft)
+
+todo
 
 # 数据竞争(data race)
 
