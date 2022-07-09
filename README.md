@@ -20,9 +20,11 @@
     - 小知识
 - 技术点
     - server-sent event
-    - go + eth
+    - eth
     - rpc demo
-- 使用记录
+- 记录
     - github使用记录
     - go测试框架使用记录
     - travis持续集成+codecov代码覆盖率使用记录
+    - makefile学习笔记
+    - vue3官方文档阅读笔记

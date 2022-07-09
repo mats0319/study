@@ -2,6 +2,8 @@
 
 go语言的依赖管理系统
 
+通过`go.mod`文件定义，文件描述了module的属性，包括它的依赖和使用的go版本
+
 ## 初始化
 
 `go mod init [module path]`
@@ -32,8 +34,6 @@ module path可以结合版本信息一起使用，例如`github.com/go-pg/pg/v10
 
 1. release格式版本号举例：`v1.2.3`
 2. go生成的伪版本号举例：`v0.0.0-20170915032832-14c0d48ead0c`
-
-版本格式详细解释见文末
 
 ### replace
 
