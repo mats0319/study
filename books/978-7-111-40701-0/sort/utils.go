@@ -7,18 +7,20 @@ import (
 )
 
 func testWrapper(t *testing.T, sortFunc func([]int), specialValues ...int) {
-	intSlice := support.GenerateRandomIntSlice(100, 100, specialValues...)
-	originData := support.DeepCopyIntSlice(intSlice)
+	for range [10_0000]struct{}{} {
+		intSlice := support.GenerateRandomIntSlice(100, 100, specialValues...)
+		originData := support.DeepCopyIntSlice(intSlice)
 
-	sortFunc(intSlice)
+		sortFunc(intSlice)
 
-	sortedSlice := support.DeepCopyIntSlice(originData)
-	sort.Ints(sortedSlice)
+		sortedSlice := support.DeepCopyIntSlice(originData)
+		sort.Ints(sortedSlice)
 
-	if !support.CompareOnIntSlice(sortedSlice, intSlice) {
-		t.Logf("> Test insert sort failed.\n\torigin data: %v\n\texpected: %v\n\tget     : %v\n",
-			originData, sortedSlice, intSlice)
-		t.Fail()
+		if !support.CompareOnIntSlice(sortedSlice, intSlice) {
+			t.Logf("> Test insert sort failed.\n\torigin data: %v\n\texpected: %v\n\tget     : %v\n",
+				originData, sortedSlice, intSlice)
+			t.Fail()
+		}
 	}
 }
 

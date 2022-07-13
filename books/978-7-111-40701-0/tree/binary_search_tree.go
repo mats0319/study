@@ -81,3 +81,33 @@ func (t *binarySearchTreeImpl) insert(key int, value int) {
 		}
 	}
 }
+
+var _ IBSTNode = (*bstNode)(nil)
+
+func (n *bstNode) IsEmpty() bool {
+	return n == nil
+}
+
+func (n *bstNode) Key() int {
+	if n == nil {
+		return -1
+	}
+
+	return n.key
+}
+
+func (n *bstNode) Left() IBSTNode {
+	if n == nil {
+		return nil
+	}
+
+	return n.left
+}
+
+func (n *bstNode) Right() IBSTNode {
+	if n == nil {
+		return nil
+	}
+
+	return n.right
+}

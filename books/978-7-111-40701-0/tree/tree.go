@@ -9,3 +9,11 @@ type balancedBST interface {
 	Insert(key int, value int)
 	Delete(key int)
 }
+
+// IBSTNode for test
+type IBSTNode interface {
+	IsEmpty() bool
+	Key() int
+	Left() IBSTNode
+	Right() IBSTNode
+}

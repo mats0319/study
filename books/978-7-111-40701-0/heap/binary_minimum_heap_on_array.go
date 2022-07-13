@@ -3,13 +3,13 @@ package heap
 import "github.com/pkg/errors"
 
 type binaryMinimumHeapOnArray struct {
-	array []int
-	size  int
+	data []int
+	size int // valid data amount, can use as index directly
 }
 
 func NewBinaryMinimumHeapOnArray(data ...int) Heap {
 	heapIns := &binaryMinimumHeapOnArray{
-		array: make([]int, 1, len(data)+1), // deprecated first index
+		data: make([]int, 1, len(data)+1), // deprecated first element
 	}
 
 	for i := range data {
@@ -20,7 +20,7 @@ func NewBinaryMinimumHeapOnArray(data ...int) Heap {
 }
 
 func (h *binaryMinimumHeapOnArray) Push(v int) {
-	h.array = append(h.array, v)
+	h.data = append(h.data, v)
 
 	h.size++
 
@@ -32,9 +32,9 @@ func (h *binaryMinimumHeapOnArray) Pop() (int, error) {
 		return 0, errors.New("empty heap")
 	}
 
-	popValue := h.array[1]
+	popValue := h.data[1]
 
-	h.array[1] = h.array[h.size]
+	h.data[1] = h.data[h.size]
 
 	h.size--
 
@@ -43,40 +43,43 @@ func (h *binaryMinimumHeapOnArray) Pop() (int, error) {
 	return popValue, nil
 }
 
-// shiftUp shift last element up to it position
+// shiftUp shift last element up to its position
 func (h *binaryMinimumHeapOnArray) shiftUp() {
 	index := h.size
 
-	for index != 1 && h.array[index] < h.array[index/2] { // loop when 'index' is not root and 'index' < 'index'.parent
-		h.array[index], h.array[index/2] = h.array[index/2], h.array[index]
+	for index > 1 && h.data[index] < h.data[index/2] { // loop until root or 'parent' <= 'index'
+		h.data[index], h.data[index/2] = h.data[index/2], h.data[index]
 
 		index /= 2
 	}
 }
 
-// shiftDown shift root element down, in each step, we swap root and its smaller child
+// shiftDown shift first element down, in each step, we swap 'index' with its smaller child
 func (h *binaryMinimumHeapOnArray) shiftDown() {
-	for index := 1; index*2 <= h.size; { // loop when 'index' is not leaf node
-		left := h.array[index]
-		if left > h.array[index*2] {
-			left = h.array[index*2]
+	for index := 1; index*2 <= h.size; { // loop until leaf node
+		value := h.data[index]
+
+		left := value
+		if left > h.data[index*2] {
+			left = h.data[index*2]
 		}
 
-		right := h.array[index]
-		if index*2+1 <= h.size && right > h.array[index*2+1] {
-			right = h.array[index*2+1]
+		right := value
+		if index*2+1 <= h.size && right > h.data[index*2+1] { // if exist right child and 'index' > 'right child'
+			right = h.data[index*2+1]
 		}
 
-		if left == h.array[index] && right == h.array[index] { // 'index' <= left child and right child(or not exist)
+		// 'index' is in its position: less than or equal to 'children'(include child not exist situation)
+		if left == value && right == value {
 			break
 		}
 
-		// swap 'index' with its smaller child
+		// need more swap, swap 'index' with its smaller child
 		if left <= right {
-			h.array[index], h.array[index*2] = h.array[index*2], h.array[index]
+			h.data[index], h.data[index*2] = h.data[index*2], h.data[index]
 			index *= 2
 		} else {
-			h.array[index], h.array[index*2+1] = h.array[index*2+1], h.array[index]
+			h.data[index], h.data[index*2+1] = h.data[index*2+1], h.data[index]
 			index = index*2 + 1
 		}
 	}

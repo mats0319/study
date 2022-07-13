@@ -88,7 +88,7 @@ func (t *avlTreeImpl) Insert(key int, value int) {
 	}
 
 	if needCheckBalance {
-		t.checkBalance(t.root, nil)
+		t.keepBalance(t.root, nil)
 	}
 }
 
@@ -117,52 +117,52 @@ func (t *avlTreeImpl) Delete(key int) {
 		return
 	}
 
-	// 'key' exist, recurse move value of its higher child to current node until leaf node, del the leaf node
-	for !p.isLeaf() {
-		leftHeight := -1
-		if p.left != nil {
-			leftHeight = p.left.height
-		}
-
-		rightHeight := -1
-		if p.right != nil {
-			rightHeight = p.right.height
-		}
-
+	// 'key' exist, find next node of 'p' and remove it
+	var child *avlTreeNode
+	if p.left != nil && p.right != nil {
 		pre = p
+		del := p.right
+		for del.left != nil {
+			pre = del
+			del = del.left
+		}
 
-		if leftHeight > rightHeight {
-			p.value = p.left.value
-			p = p.left
-		} else {
-			p.value = p.right.value
-			p = p.right
+		p.key = del.key
+		p.value = del.value
+
+		p = del
+		child = del.right
+	} else { // 'p' is leaf node or has only one child
+		if p.left != nil {
+			child = p.left
+		} else if p.right != nil {
+			child = p.right
 		}
 	}
 
 	if pre.left == p {
-		pre.left = nil
+		pre.left = child
 	} else {
-		pre.right = nil
+		pre.right = child
 	}
 
-	t.checkBalance(t.root, nil)
+	t.keepBalance(t.root, nil)
 }
 
-func (t *avlTreeImpl) checkBalance(node *avlTreeNode, parent *avlTreeNode) {
+func (t *avlTreeImpl) keepBalance(node *avlTreeNode, parent *avlTreeNode) {
 	if node == nil {
 		return
 	}
 
 	leftHeight := -1
 	if node.left != nil {
-		t.checkBalance(node.left, node)
+		t.keepBalance(node.left, node)
 		leftHeight = node.left.height
 	}
 
 	rightHeight := -1
 	if node.right != nil {
-		t.checkBalance(node.right, node)
+		t.keepBalance(node.right, node)
 		rightHeight = node.right.height
 	}
 
@@ -172,7 +172,30 @@ func (t *avlTreeImpl) checkBalance(node *avlTreeNode, parent *avlTreeNode) {
 
 	if node.balanceFactor < -1 || node.balanceFactor > 1 {
 		t.doBalance(node, parent)
+		calcHAndB(parent)
 	}
+}
+
+func calcHAndB(node *avlTreeNode) {
+	if node == nil {
+		return
+	}
+
+	leftHeight := -1
+	if node.left != nil {
+		calcHAndB(node.left)
+		leftHeight = node.left.height
+	}
+
+	rightHeight := -1
+	if node.right != nil {
+		calcHAndB(node.right)
+		rightHeight = node.right.height
+	}
+
+	node.height = big(leftHeight, rightHeight) + 1
+
+	node.balanceFactor = leftHeight - rightHeight
 }
 
 func (t *avlTreeImpl) doBalance(node *avlTreeNode, parent *avlTreeNode) {
@@ -231,10 +254,6 @@ func (t *avlTreeImpl) rotateLeft(node *avlTreeNode, parent *avlTreeNode) {
 	r.left = node
 }
 
-func (n *avlTreeNode) isLeaf() bool {
-	return n.left == nil && n.right == nil
-}
-
 func big(a, b int) (res int) {
 	if a > b {
 		res = a
@@ -243,4 +262,34 @@ func big(a, b int) (res int) {
 	}
 
 	return
+}
+
+var _ IBSTNode = (*avlTreeNode)(nil)
+
+func (n *avlTreeNode) IsEmpty() bool {
+	return n == nil
+}
+
+func (n *avlTreeNode) Key() int {
+	if n == nil {
+		return -1
+	}
+
+	return n.key
+}
+
+func (n *avlTreeNode) Left() IBSTNode {
+	if n == nil {
+		return nil
+	}
+
+	return n.left
+}
+
+func (n *avlTreeNode) Right() IBSTNode {
+	if n == nil {
+		return nil
+	}
+
+	return n.right
 }

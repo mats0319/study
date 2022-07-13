@@ -1,128 +1,89 @@
 package tree
 
 import (
-	"fmt"
 	"github.com/mats9693/utils/support"
 	"testing"
 )
 
 func TestNewAVLTree(t *testing.T) {
-	data := support.GenerateRandomIntSlice(1000, 1000)
+	test100000Times(t, func(t *testing.T) {
 
-	avlTreeIns := newAVLTree(data...)
+		data := support.GenerateRandomIntSlice(1000, 1000)
 
-	if !isAVLTree(avlTreeIns) {
-		t.Logf("data: %v\ntree: \n%s", data, printAVLTree(avlTreeIns))
-		t.Fail()
-	}
+		avlTreeIns := newAVLTree(data...)
+
+		if !isAVLTree(avlTreeIns.root) {
+			t.Logf("data: %v\ntree: \n%s", data, printBST(avlTreeIns.root))
+			t.Fail()
+		}
+	})
 }
 
 func TestAvlTreeImpl_Find(t *testing.T) {
-	data := support.GenerateRandomIntSlice(20, 100, 0)
+	test100000Times(t, func(t *testing.T) {
+		data := support.GenerateRandomIntSlice(20, 100, 0)
 
-	avlTreeIns := newAVLTree(data...)
+		avlTreeIns := newAVLTree(data...)
 
-	values := []int{0, 200}
-	expected := []bool{true, false}
+		values := []int{0, 200}
+		expected := []bool{true, false}
 
-	if len(values) != len(expected) {
-		t.Logf("unexpected amount")
-		t.Fail()
-	}
-
-	for i := range values {
-		_, ok := avlTreeIns.Find(values[i])
-		if ok != expected[i] {
-			t.Logf("test avl tree find failed, index: %d\n\twant: %t\n\tget: %t\n", i, expected[i], ok)
+		if len(values) != len(expected) {
+			t.Logf("unexpected amount")
 			t.Fail()
 		}
-	}
 
-	if !isAVLTree(avlTreeIns) {
-		t.Logf("data: %v\ntree: \n%s", data, printAVLTree(avlTreeIns))
-		t.Fail()
-	}
-}
-
-func TestAvlTreeImpl_Insert(t *testing.T) {
-	data := support.GenerateRandomIntSlice(20, 100)
-
-	avlTreeIns := newAVLTree(data...)
-
-	for i := 0; i < 10; i++ {
-		avlTreeIns.Insert(200+i, 200+i)
-	}
-
-	if _, ok := avlTreeIns.Find(200); !ok {
-		t.Logf("test avl tree insert failed")
-		t.Fail()
-	}
-
-	if !isAVLTree(avlTreeIns) {
-		t.Logf("data: %v\ntree: \n%s", data, printAVLTree(avlTreeIns))
-		t.Fail()
-	}
-}
-
-func TestAvlTreeImpl_Delete(t *testing.T) {
-	specialValues := []int{-10, 0, 10, 200}
-
-	data := support.GenerateRandomIntSlice(20, 100, specialValues...)
-
-	avlTreeIns := newAVLTree(data...)
-
-	for i := range specialValues {
-		avlTreeIns.Delete(specialValues[i])
-	}
-
-	if _, ok := avlTreeIns.Find(200); ok {
-		t.Logf("test avl tree delete failed")
-		t.Fail()
-	}
-
-	if !isAVLTree(avlTreeIns) {
-		t.Logf("data: %v\ntree: \n%s", data, printAVLTree(avlTreeIns))
-		t.Fail()
-	}
-}
-
-func printAVLTree(tree *avlTreeImpl) string {
-	if tree == nil {
-		return ""
-	}
-
-	nodeList := []*avlTreeNode{tree.root}
-	res := ""
-	for len(nodeList) > 0 {
-		nextNodeList := make([]*avlTreeNode, 0, len(nodeList)*2)
-
-		for len(nodeList) > 0 {
-			node := nodeList[0]
-			nodeList = nodeList[1:]
-
-			if node == nil {
-				res += "null "
-			} else {
-				res += fmt.Sprintf("%d ", node.value)
-				nextNodeList = append(nextNodeList, node.left, node.right)
+		for i := range values {
+			_, ok := avlTreeIns.Find(values[i])
+			if ok != expected[i] {
+				t.Logf("test avl tree find failed, index: %d\n\twant: %t\n\tget: %t\n", i, expected[i], ok)
+				t.Fail()
 			}
 		}
 
-		res += "\n"
-		nodeList = nextNodeList
-	}
-
-	return res
+		if !isAVLTree(avlTreeIns.root) {
+			t.Logf("data: %v\ntree: \n%s", data, printBST(avlTreeIns.root))
+			t.Fail()
+		}
+	})
 }
 
-func isAVLTree(tree *avlTreeImpl) bool {
-	return isValidAVLTreeNode(tree.root)
+func TestAvlTreeImpl_Insert(t *testing.T) {
+	TestNewAVLTree(t)
+}
+
+func TestAvlTreeImpl_Delete(t *testing.T) {
+	test100000Times(t, func(t *testing.T) {
+		specialValue := 10
+
+		data := support.GenerateRandomIntSlice(20, 100, specialValue)
+
+		avlTreeIns := newAVLTree(data...)
+
+		treeBeforeDel := printBST(avlTreeIns.root)
+
+		avlTreeIns.Delete(specialValue)
+
+		if _, ok := avlTreeIns.Find(specialValue); ok {
+			t.Logf("test avl tree delete failed")
+			t.Fail()
+		}
+
+		if !isAVLTree(avlTreeIns.root) {
+			t.Logf("is bst: %t\ndata: %v\ntree before del: \n%s\ntree after del: \n%s", isBST(avlTreeIns.root), dfsBSTNode(avlTreeIns.root), treeBeforeDel, printBST(avlTreeIns.root))
+			t.Fail()
+		}
+	})
+}
+
+func isAVLTree(node *avlTreeNode) bool {
+	return isBST(node) && isValidAVLTreeNode(node)
 }
 
 func isValidAVLTreeNode(node *avlTreeNode) bool {
 	if node == nil {
 		return true
-	} else if node.isLeaf() {
+	} else if node.left == nil && node.right == nil {
 		node.height = 0
 
 		return true
