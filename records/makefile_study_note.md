@@ -1,4 +1,6 @@
-# makefile
+# makefile 学习笔记
+
+> 不是系统性的学习make，仅针对我需要的内容
 
 [reference](https://www.ruanyifeng.com/blog/2015/02/make.html)
 

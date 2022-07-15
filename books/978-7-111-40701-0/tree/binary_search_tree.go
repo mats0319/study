@@ -89,25 +89,13 @@ func (n *bstNode) IsEmpty() bool {
 }
 
 func (n *bstNode) Key() int {
-	if n == nil {
-		return -1
-	}
-
 	return n.key
 }
 
 func (n *bstNode) Left() IBSTNode {
-	if n == nil {
-		return nil
-	}
-
 	return n.left
 }
 
 func (n *bstNode) Right() IBSTNode {
-	if n == nil {
-		return nil
-	}
-
 	return n.right
 }

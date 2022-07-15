@@ -271,25 +271,13 @@ func (n *avlTreeNode) IsEmpty() bool {
 }
 
 func (n *avlTreeNode) Key() int {
-	if n == nil {
-		return -1
-	}
-
 	return n.key
 }
 
 func (n *avlTreeNode) Left() IBSTNode {
-	if n == nil {
-		return nil
-	}
-
 	return n.left
 }
 
 func (n *avlTreeNode) Right() IBSTNode {
-	if n == nil {
-		return nil
-	}
-
 	return n.right
 }

@@ -10,7 +10,7 @@ type balancedBST interface {
 	Delete(key int)
 }
 
-// IBSTNode for test
+// IBSTNode for test, implement ignore nil check, invoke
 type IBSTNode interface {
 	IsEmpty() bool
 	Key() int
