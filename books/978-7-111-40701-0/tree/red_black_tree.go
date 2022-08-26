@@ -76,7 +76,7 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 		}
 	}
 
-	// 'key' is exist
+	// 'key' is exist, just update 'value'
 	if p != nil {
 		p.value = value
 		return
@@ -104,16 +104,16 @@ func (t *redBlackTreeImpl) Insert(key int, value int) {
 		} else { // situation: 1.2
 			parent.right = newNode
 
-			t.balanceToBlackNode(parent)
+			t.insertIntoBlackNode(parent)
 		}
-	} else {
+	} else { // situation: 2
 		if key < parent.key {
 			parent.left = newNode
 		} else {
 			parent.right = newNode
 		}
 
-		t.balanceToRedNode(newNode)
+		t.insertIntoRedNode(newNode)
 	}
 }
 
@@ -148,6 +148,14 @@ func (t *redBlackTreeImpl) rotateRight(node *redBlackTreeNode) {
 	node.left = m
 	if m != nil {
 		m.parent = node
+
+		if m.color == red && node.color == red {
+			t.insertIntoRedNode(m)
+		}
+	}
+
+	if l.color == red && (p != nil && p.color == red) {
+		t.insertIntoRedNode(l)
 	}
 }
 
@@ -176,19 +184,39 @@ func (t *redBlackTreeImpl) rotateLeft(node *redBlackTreeNode) {
 	node.right = m
 	if m != nil {
 		m.parent = node
+
+		if m.color == red && node.color == red {
+			t.insertIntoRedNode(m)
+		}
+	}
+
+	if r.color == red && (p != nil && p.color == red) {
+		t.insertIntoRedNode(r)
 	}
 }
 
 func (n *redBlackTreeNode) setColor(c redBlackTreeNodeColor) {
-	if n == nil {
-		return
+	if n != nil {
+		n.color = c
 	}
-
-	n.color = c
 }
 
-// balanceToRedNode node is in the tree, just do balance
-func (t *redBlackTreeImpl) balanceToRedNode(node *redBlackTreeNode) {
+// insertIntoBlackNode node is in the tree, just do balance
+func (t *redBlackTreeImpl) insertIntoBlackNode(parent *redBlackTreeNode) {
+    // situation: 1.2
+    parent.setColor(red)
+    parent.left.setColor(black)
+    parent.right.setColor(black)
+
+    if parent.parent == nil  {
+        parent.setColor(black)
+    } else if parent.parent.color == red {
+        t.insertIntoRedNode(parent)
+    }
+}
+
+// insertIntoRedNode node is in the tree, just do balance
+func (t *redBlackTreeImpl) insertIntoRedNode(node *redBlackTreeNode) {
 	parent := node.parent
 
 	if parent.right == node { // situation: 2.2
@@ -196,7 +224,7 @@ func (t *redBlackTreeImpl) balanceToRedNode(node *redBlackTreeNode) {
 		node.setColor(black)
 		t.rotateLeft(parent)
 
-		parent = node
+		parent, node = node, parent
 	}
 
 	// situation: 2.1
@@ -204,21 +232,7 @@ func (t *redBlackTreeImpl) balanceToRedNode(node *redBlackTreeNode) {
 	parent.setColor(black)
 	t.rotateRight(parent.parent)
 
-	t.balanceToBlackNode(parent)
-}
-
-// balanceToBlackNode node is in the tree, just do balance
-func (t *redBlackTreeImpl) balanceToBlackNode(parent *redBlackTreeNode) {
-	// situation: 1.2
-	parent.setColor(red)
-	parent.left.setColor(black)
-	parent.right.setColor(black)
-
-	if parent.parent == nil  {
-		parent.setColor(black)
-	} else if parent.parent.color == red {
-		t.balanceToRedNode(parent)
-	}
+	t.insertIntoBlackNode(parent)
 }
 
 var _ IBSTNode = (*redBlackTreeNode)(nil)

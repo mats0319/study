@@ -7,22 +7,49 @@ import (
 )
 
 func TestNewRedBlackTree(t *testing.T) {
-	data := support.GenerateRandomIntSlice(1000, 1000)
+	test100000Times(t, func(t *testing.T) {
+		data := support.GenerateRandomIntSlice(1000, 1000)
 
-	redBlackTreeIns := newRedBlackTree(data...)
+		redBlackTreeIns := newRedBlackTree(data...)
 
-	if !isRedBlackTree(redBlackTreeIns) {
-		t.Logf("data: %v\ntree: \n%s", data, printRedBlackTree(redBlackTreeIns))
-		t.Fail()
-	}
+		if !isRedBlackTree(redBlackTreeIns) {
+			t.Logf("data: %v\ntree: \n%s", data, printRedBlackTree(redBlackTreeIns))
+			t.Fail()
+		}
+	})
 }
 
 func TestRedBlackTreeImpl_Find(t *testing.T) {
-	// todo: impl
+	test100000Times(t, func(t *testing.T) {
+		data := support.GenerateRandomIntSlice(20, 100, 0)
+
+		redBlackTreeIns := newRedBlackTree(data...)
+
+		values := []int{0, 200}
+		expected := []bool{true, false}
+
+		if len(values) != len(expected) {
+			t.Logf("unexpected amount")
+			t.Fail()
+		}
+
+		for i := range values {
+			_, ok := redBlackTreeIns.Find(values[i])
+			if ok != expected[i] {
+				t.Logf("test red-black tree find failed, index: %d\n\twant: %t\n\tget: %t\n", i, expected[i], ok)
+				t.Fail()
+			}
+		}
+
+		if !isRedBlackTree(redBlackTreeIns) {
+			t.Logf("data: %v\ntree: \n%s", data, printRedBlackTree(redBlackTreeIns))
+			t.Fail()
+		}
+	})
 }
 
 func TestRedBlackTreeImpl_Insert(t *testing.T) {
-	// todo: impl
+	TestNewAVLTree(t)
 }
 
 func TestRedBlackTreeImpl_Delete(t *testing.T) {

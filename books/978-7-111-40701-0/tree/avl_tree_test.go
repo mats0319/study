@@ -7,12 +7,11 @@ import (
 
 func TestNewAVLTree(t *testing.T) {
 	test100000Times(t, func(t *testing.T) {
-
 		data := support.GenerateRandomIntSlice(1000, 1000)
 
 		avlTreeIns := newAVLTree(data...)
 
-		if !isAVLTree(avlTreeIns.root) {
+		if !isAVLTree(avlTreeIns) {
 			t.Logf("data: %v\ntree: \n%s", data, printBST(avlTreeIns.root))
 			t.Fail()
 		}
@@ -41,7 +40,7 @@ func TestAvlTreeImpl_Find(t *testing.T) {
 			}
 		}
 
-		if !isAVLTree(avlTreeIns.root) {
+		if !isAVLTree(avlTreeIns) {
 			t.Logf("data: %v\ntree: \n%s", data, printBST(avlTreeIns.root))
 			t.Fail()
 		}
@@ -69,15 +68,15 @@ func TestAvlTreeImpl_Delete(t *testing.T) {
 			t.Fail()
 		}
 
-		if !isAVLTree(avlTreeIns.root) {
+		if !isAVLTree(avlTreeIns) {
 			t.Logf("is bst: %t\ndata: %v\ntree before del: \n%s\ntree after del: \n%s", isBST(avlTreeIns.root), dfsBSTNode(avlTreeIns.root), treeBeforeDel, printBST(avlTreeIns.root))
 			t.Fail()
 		}
 	})
 }
 
-func isAVLTree(node *avlTreeNode) bool {
-	return isBST(node) && isValidAVLTreeNode(node)
+func isAVLTree(tree *avlTreeImpl) bool {
+	return isBST(tree.root) && isValidAVLTreeNode(tree.root)
 }
 
 func isValidAVLTreeNode(node *avlTreeNode) bool {
