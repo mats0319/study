@@ -49,7 +49,7 @@ library verifySignature {
         uint256 tokenId,
         string memory timestamp
     ) view internal returns (bytes memory) {
-        bytes memory params = abi.encodePacked(behavior, "(token id: ", tokenId.toString(), ") in ", timestamp, " on ");
+        bytes memory params = abi.encodePacked(behavior, "(token id: ", tokenId.toHexString(), ") in ", timestamp, " on ");
         bytes memory addressBytes = hexContractAddress();
 
         bytes memory message = new bytes(params.length+addressBytes.length);
@@ -73,9 +73,9 @@ library verifySignature {
         bytes20 data = bytes20(address(this));
         for (uint i = 0; i < 20; i++) {
             uint8 char = uint8(data[i]);
-            if (41 <= char && char <= 46) {
-                char += 20;
-            }
+//            if (41 <= char && char <= 46) {
+//                char += 20;
+//            }
 
             res[i*2 + 0] = alphabet[uint256(char) >> 4];
             res[i*2 + 1] = alphabet[uint256(char) & 15];
