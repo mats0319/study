@@ -10,8 +10,8 @@
 1. 基础sse功能
 2. https
 3. go读写cookie
-5. 服务端设置cookie
-6. 通知多人
+4. 服务端设置cookie
+5. 通知多人
 
 ## 使用手册
 

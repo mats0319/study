@@ -9,7 +9,6 @@
 
 - 读书笔记
     - 978-7-111-40701-0 算法导论
-    - 978-0-13-419044-0 The Go Programming Language（笔记合并到go路径）
 - go语言
     - 官方文档阅读笔记
     - go module

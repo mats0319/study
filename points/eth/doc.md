@@ -1,4 +1,4 @@
-# 以太坊链相关
+# 以太坊相关
 
 对BTC链了解较少，不做整理
 对波卡链了解停留在老版本，不做展开
@@ -6,10 +6,9 @@
 
 ## 介绍
 
-1. contract visualization tool：合约可视化工具
+1. visualization tool：合约可视化工具
     1. 一个合约操作界面，可以部署合约、调用合约函数
-    2. 使用wallet connect连接到钱包
-    3. 使用web3js调用pure/view方法
+    2. 详见路径下`doc.md`文档
 2. test：一些eth链的功能测试
     1. 将多笔交易打包成一笔，更节省gas费
     2. 跨合约调用需要消耗更多的gas
