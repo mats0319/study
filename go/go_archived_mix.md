@@ -13,15 +13,15 @@ go fuzzing使用覆盖指导(coverage guidance)，智能遍历被测试的代码
 示例代码：
 
 ```go 
-1.  func FuzzFoo(f *testing.F) {
-2.      f.Add(5, "hello")
-3.      f.Fuzz(func(t *testing.T, i int, s string) {
-4.          out, err := Foo(i, s)
-5.          if err != nil && out != "" {
-6.              t.Errorf("%q, %v", out, err)
-7.          }
-8.      })
-9.  }
+func FuzzFoo(f *testing.F) {
+    f.Add(5, "hello")
+    f.Fuzz(func(t *testing.T, i int, s string) {
+        out, err := Foo(i, s)
+        if err != nil && out != "" {
+            t.Errorf("%q, %v", out, err)
+        }
+    })
+}
 ```
 
 定义：
