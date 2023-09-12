@@ -1,3 +1,3 @@
-module github.com/scryinfo/contract/manage_ui
+module github.com/mats9693/study/demo/eth/visualization_tool
 
-go 1.18
+go 1.21.0
