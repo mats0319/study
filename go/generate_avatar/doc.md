@@ -16,12 +16,16 @@
 
 示例图片：
 
-![img](img/mario_3.png)
-![img](img/mats9693_3.png)
+![img](img/mario_4.png)
+![img](img/mats9693_4.png)
 
 ## 使用
 
-参考test代码
+> 参考test代码
+
+说明：
+1. 代码直接将图片保存到`./img/`路径
+2. 代码写文件bug：文件名大写字母会被转小写，可能导致文件覆盖
 
 ## 实现
 

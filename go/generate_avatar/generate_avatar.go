@@ -30,8 +30,11 @@ func GenerateAvatar(text string, clarity int) error {
 	// calc image style
 	imageImplIns := &imageImpl{
 		clarity:         clarity,
-		backgroundColor: color.RGBA{R: 255, G: 255, B: 255, A: 255},
+		backgroundColor: color.RGBA{R: 255, G: 255, B: 255, A: 255}, // white
 	}
+
+
+
 	{
 		matrix := [5][3]bool{}
 		for i := 0; i < len(matrix); i++ {
@@ -66,18 +69,13 @@ func GenerateAvatar(text string, clarity int) error {
 		return err
 	}
 
-	err = os.MkdirAll("./img/", 0755)
-	if err != nil {
-		return err
+	filename := text
+	if len(filename) > 8 {
+		filename = filename[:8]
 	}
+	filename = fmt.Sprintf("./img/%s_%d.png", filename, clarity)
 
-	fileName := text
-	if len(fileName) > 8 {
-		fileName = fileName[:8]
-	}
-	fileName = fmt.Sprintf("./img/%s_%d.png", fileName, clarity)
-
-	return os.WriteFile(fileName, byteSlice, 0755)
+	return os.WriteFile(filename, byteSlice, 0777)
 }
 
 // calcSHA256 always return a 64-length hex string
