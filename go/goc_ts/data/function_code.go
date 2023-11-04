@@ -1,5 +1,9 @@
 package data
 
+import "strings"
+
+const functionName_ObjectToFormData = "objectToFormData"
+
 const FunctionCode_ObjectToFormData = `
 // objectToFormData 泛型用于解决'obj[key]'报错问题
 export function objectToFormData<T extends object>(obj: T): FormData {
@@ -17,3 +21,10 @@ export function objectToFormData<T extends object>(obj: T): FormData {
 {{ $indentation }}return data
 }
 `
+
+func FuncCodeIndentation(funcCode string) string {
+	res := funcCode
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(GetIndentation(1)))
+
+	return res
+}

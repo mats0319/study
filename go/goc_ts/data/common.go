@@ -3,7 +3,7 @@ package data
 var Copyright = []byte("// Generate File, Should not Edit.\n" +
 	"// Author: mario. https://github.com/mats9693\n" +
 	"// Version: goc_ts " + Version + "\n")
-var Version = "v0.1.0"
+var Version = "v0.2.0"
 
 const RequestMessageSuffix = "Req"
 const ResponseMessageSuffix = "Res"

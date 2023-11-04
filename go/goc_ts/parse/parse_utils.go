@@ -2,7 +2,6 @@ package parse
 
 import (
 	"github.com/mats9693/study/go/goc_ts/data"
-	"strings"
 )
 
 func ParseUtils(apiIns *data.API) {
@@ -22,16 +21,9 @@ ALL:
 
 			if hasValidMessage {
 				apiIns.Utils.NeedObjectToFormData = true
-				apiIns.Utils.ObjectToFormData = []byte(funcCodeIndentation(data.FunctionCode_ObjectToFormData))
+				apiIns.Utils.ObjectToFormData = []byte(data.FuncCodeIndentation(data.FunctionCode_ObjectToFormData))
 				break ALL
 			}
 		}
 	}
-}
-
-func funcCodeIndentation(funcCode string) string {
-	res := funcCode
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation(1)))
-
-	return res
 }

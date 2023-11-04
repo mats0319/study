@@ -4,8 +4,6 @@ import (
 	"github.com/mats9693/study/go/goc_ts/data"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func GenerateConfig(config *data.APIConfig, outDir string) {
@@ -22,17 +20,8 @@ func GenerateConfig(config *data.APIConfig, outDir string) {
 		log.Fatalln("write config file failed, error: ", err)
 	}
 
-	_, err = file.Write([]byte(fillConfigCode(config)))
+	_, err = file.Write([]byte(data.FormatConfigCode(config)))
 	if err != nil {
 		log.Fatalln("write config file failed, error: ", err)
 	}
-}
-
-func fillConfigCode(config *data.APIConfig) string {
-	res := data.ConfigCode
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation(1)))
-	res = strings.ReplaceAll(res, "{{ $baseURL }}", config.BaseURL)
-	res = strings.ReplaceAll(res, "{{ $timeout }}", strconv.Itoa(int(config.Timeout)))
-
-	return res
 }

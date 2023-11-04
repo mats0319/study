@@ -41,6 +41,12 @@ const doubleValue = computed(() => store.doubleCount)
 </script>
 ```
 
+### 持久化
+
+使用新的组件库：https://prazdevs.github.io/pinia-plugin-persistedstate/zh/guide/
+
+需要编辑main.ts，以及在每个需要持久化的pinia组件中明确设置。具体参考上方文档。
+
 ## vite配置文档
 
 > 学习时间：2023.9
