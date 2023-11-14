@@ -1,0 +1,23 @@
+{
+  "name": "ethereum",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "npx hardhat clean && npx hardhat compile",
+    "start-local-node": "npx hardhat node",
+    "deploy-local": "npx hardhat run --network localhost scripts/deploy_data.ts",
+    "test-local": "npx hardhat test --network localhost test/data.ts",
+    "test-dev": "npm run compile && npm run test-local"
+  },
+  "dependencies": {
+    "hardhat": "^2.19.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@types/mocha": "^10.0.4",
+    "ethers": "^6.8.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
