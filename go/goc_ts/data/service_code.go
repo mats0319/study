@@ -8,6 +8,7 @@ import (
 func FormatServiceCode(serviceItems []*ServiceItem, messageItems []*MessageItem, filename string) string {
 	res := `
 import { axiosWrapper } from "./config"
+import { AxiosResponse } from "axios"
 import { {{ $structures }} } from "./{{ $filename }}.go"
 {{ $serviceCode_Utils }}
 
@@ -83,7 +84,7 @@ func formatServiceUtils(functions map[string]struct{}) string {
 func fillServiceCodeRequest(serviceName string, serviceURI string, messageFields []*MessageField) string {
 	res := "\n" +
 		"{{ $indentation }}public {{ $serviceNameSmall }}({{ $paramsWithType }}): " +
-		"Promise<{{ $serviceName }}Res> {{{ $serviceCode_ReqStruct }}\n" +
+		"Promise<AxiosResponse<{{ $serviceName }}Res>> {{{ $serviceCode_ReqStruct }}\n" +
 		"{{ $indentation }}{{ $indentation }}return axiosWrapper.post(\"{{ $serviceURI }}\"{{ $requestParams }})\n" +
 		"{{ $indentation }}}\n"
 

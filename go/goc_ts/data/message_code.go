@@ -6,7 +6,7 @@ import "strings"
 func FormatMessage(message *MessageItem) string {
 	fieldsStr := ""
 	for i := range message.Fields {
-		field := "{{ $indentation }}{{ $fieldName }}?: {{ $fieldTSType }} = {{ $fieldTSZeroValue }}\n"
+		field := "{{ $indentation }}{{ $fieldName }}: {{ $fieldTSType }} = {{ $fieldTSZeroValue }};\n"
 		field = strings.ReplaceAll(field, "{{ $indentation }}", string(GetIndentation(1)))
 		field = strings.ReplaceAll(field, "{{ $fieldName }}", message.Fields[i].Name)
 		field = strings.ReplaceAll(field, "{{ $fieldTSType }}", message.Fields[i].TSType)

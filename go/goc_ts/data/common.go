@@ -2,8 +2,8 @@ package data
 
 var Copyright = []byte("// Generate File, Should not Edit.\n" +
 	"// Author: mario. https://github.com/mats9693\n" +
-	"// Version: goc_ts " + Version + "\n")
-var Version = "v0.2.0"
+	"// Version: " + Version + "\n")
+var Version = "goc_ts v0.2.1"
 
 const RequestMessageSuffix = "Req"
 const ResponseMessageSuffix = "Res"
@@ -15,12 +15,14 @@ const MessageFileSuffix = ".go.ts"
 var MessageFieldType = map[string]string{
 	"string": "string",
 	"int32":  "number",
+	"bool": "boolean",
 }
 
 // MessageFieldZeroValue ts type - zero value
 var MessageFieldZeroValue = map[string]string{
 	"string": `""`,
 	"number": `0`,
+	"boolean": `false`,
 }
 
 var indentation = 4 // useless, default value in flag

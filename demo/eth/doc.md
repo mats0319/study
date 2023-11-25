@@ -5,7 +5,7 @@
 [reference](https://goethereumbook.org/smart-contract-compile)
 
 1. `.sol`智能合约编译工具、部署代码生成工具
-    1. 也可以使用其他工具链，如truffle，hardhat
+    - 也可以使用其他工具链，如truffle，hardhat
 2. `abigen`：根据合约代码生成go调用代码的工具
 
 获得合约abi文件：
@@ -20,12 +20,14 @@
 
 使用：`abigen --abi abi.json --out demo.go --pkg contract --type Demo`
 
-# 区块链开发面试问题
+# 如果我来做区块链开发面试（ethereum）
 
 > 2023.11 mario, for fun
 > reference:
 > https://docs.soliditylang.org/zh/v0.8.20
 > https://docs.openzeppelin.com/contracts/5.x/upgradeable
+> https://github.com/ethereum/EIPs/blob/master/EIPS/eip-150.md ：消耗gas表格
+> https://docs.google.com/spreadsheets/d/15wghZr-Z6sRSMdmRmhls9dVXTOpxKy8Y64oy9MvDZEQ/edit#gid=0 ：消耗gas表格
 
 为什么不讨论solidity语法：
 
@@ -39,7 +41,7 @@
 2. 请简单介绍智能合约的fallback函数
     - 基础：fallback函数可以不显式定义，当你调用一个合约上并不存在的函数时，会触发这个函数
     - 扩展：可能存在安全性问题，一个简单的例子：C1合约F函数的功能是**向调用者转账**，  
-      如果用C2合约来调用F函数，就会触发C2合约的fallback函数；  
+      如果用C2合约引用C1合约来调用F函数（定义C1合约类型变量），就会触发C2合约的fallback函数；  
       当然，这个例子比较简单，因为合约上转账通常使用`address.transfer()`，这个函数固定只有2300gas，啥也不够干的
 3. 为什么尽量不要在solidity中使用时间
     - 时间戳和区块hash在一定程度上受矿工影响
