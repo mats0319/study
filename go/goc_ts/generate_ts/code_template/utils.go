@@ -1,6 +1,10 @@
-package data
+package code_template
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/mats9693/study/go/goc_ts/data"
+)
 
 const functionName_ObjectToFormData = "objectToFormData"
 
@@ -22,9 +26,9 @@ export function objectToFormData<T extends object>(obj: T): FormData {
 }
 `
 
-func FuncCodeIndentation(funcCode string) string {
+func FuncCodeIndentation(config *data.APIConfig, funcCode string) string {
 	res := funcCode
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(GetIndentation(1)))
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(config.GetIndentation(1)))
 
 	return res
 }

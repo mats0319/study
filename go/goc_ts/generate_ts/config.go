@@ -1,9 +1,11 @@
 package generate_ts
 
 import (
-	"github.com/mats9693/study/go/goc_ts/data"
 	"log"
 	"os"
+
+	"github.com/mats9693/study/go/goc_ts/data"
+	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
 )
 
 func GenerateConfig(config *data.APIConfig, outDir string) {
@@ -20,7 +22,7 @@ func GenerateConfig(config *data.APIConfig, outDir string) {
 		log.Fatalln("write config file failed, error: ", err)
 	}
 
-	_, err = file.Write([]byte(data.FormatConfigCode(config)))
+	_, err = file.Write([]byte(code_template.FormatConfigCode(config)))
 	if err != nil {
 		log.Fatalln("write config file failed, error: ", err)
 	}

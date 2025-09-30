@@ -1,11 +1,13 @@
-package data
+package code_template
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/mats9693/study/go/goc_ts/data"
 )
 
-func FormatServiceCode(serviceItems []*ServiceItem, messageItems []*MessageItem, filename string) string {
+func FormatServiceCode(config *data.APIConfig, serviceItems []*data.ServiceItem, messageItems []*data.MessageItem, filename string) string {
 	res := `
 import { axiosWrapper } from "./config"
 import { AxiosResponse } from "axios"
@@ -17,7 +19,7 @@ class {{ $filenameBig }}Axios {{{ $serviceCode_Requests }}}
 export const {{ $filename }}Axios: {{ $filenameBig }}Axios = new {{ $filenameBig }}Axios()
 `
 
-	structuresStr, utilsStr, requestStr := prepareData(serviceItems, messageItems)
+	structuresStr, utilsStr, requestStr := prepareData(config, serviceItems, messageItems)
 
 	res = strings.ReplaceAll(res, "{{ $structures }}", structuresStr)
 	res = strings.ReplaceAll(res, "{{ $filename }}", filename)
@@ -29,7 +31,7 @@ export const {{ $filename }}Axios: {{ $filenameBig }}Axios = new {{ $filenameBig
 }
 
 // prepareData prepare 'structures' / 'utils' / 'requests' of service code
-func prepareData(serviceItems []*ServiceItem, messageItems []*MessageItem) (string, string, string) {
+func prepareData(config *data.APIConfig, serviceItems []*data.ServiceItem, messageItems []*data.MessageItem) (string, string, string) {
 	var (
 		structures []string
 		functions  = make(map[string]struct{}) // key: func name
@@ -39,8 +41,8 @@ func prepareData(serviceItems []*ServiceItem, messageItems []*MessageItem) (stri
 	for i := range serviceItems {
 		serviceItemIns := serviceItems[i]
 
-		messageFields := make([]*MessageField, 0)
-		messageReqName := serviceItemIns.Name + RequestMessageSuffix
+		messageFields := make([]*data.MessageField, 0)
+		messageReqName := serviceItemIns.Name + config.RequestMessageSuffix
 		for j := range messageItems {
 			if messageItems[j].Name == messageReqName { // find 'xxxReq' message
 				messageFields = messageItems[j].Fields
@@ -48,7 +50,7 @@ func prepareData(serviceItems []*ServiceItem, messageItems []*MessageItem) (stri
 			}
 		}
 
-		structures = append(structures, serviceItemIns.Name+ResponseMessageSuffix) // import 'xxxRes' message
+		structures = append(structures, serviceItemIns.Name+config.ResponseMessageSuffix) // import 'xxxRes' message
 
 		if len(messageFields) > 0 { // 'xxxReq' message exist and has one or more field(s)
 			structures = append(structures, messageReqName)
@@ -57,6 +59,7 @@ func prepareData(serviceItems []*ServiceItem, messageItems []*MessageItem) (stri
 		}
 
 		requests = append(requests, fillServiceCodeRequest(
+			config,
 			serviceItemIns.Name,
 			serviceItemIns.URI,
 			messageFields,
@@ -81,21 +84,21 @@ func formatServiceUtils(functions map[string]struct{}) string {
 	return res
 }
 
-func fillServiceCodeRequest(serviceName string, serviceURI string, messageFields []*MessageField) string {
+func fillServiceCodeRequest(config *data.APIConfig, serviceName string, serviceURI string, messageFields []*data.MessageField) string {
 	res := "\n" +
 		"{{ $indentation }}public {{ $serviceNameSmall }}({{ $paramsWithType }}): " +
 		"Promise<AxiosResponse<{{ $serviceName }}Res>> {{{ $serviceCode_ReqStruct }}\n" +
 		"{{ $indentation }}{{ $indentation }}return axiosWrapper.post(\"{{ $serviceURI }}\"{{ $requestParams }})\n" +
 		"{{ $indentation }}}\n"
 
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(GetIndentation(1)))
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(config.GetIndentation(1)))
 	res = strings.ReplaceAll(res, "{{ $serviceNameSmall }}", mustSmall(serviceName))
 	res = strings.ReplaceAll(res, "{{ $serviceName }}", serviceName)
 	res = strings.ReplaceAll(res, "{{ $serviceURI }}", serviceURI)
 
 	var (
-		reqParamsStr string
-		reqStructStr string
+		reqParamsStr      string
+		reqStructStr      string
 		paramsWithTypeStr string
 	)
 	if len(messageFields) > 0 { // message has field(s)
@@ -108,7 +111,7 @@ func fillServiceCodeRequest(serviceName string, serviceURI string, messageFields
 		}
 
 		reqParamsStr = ", " + functionName_ObjectToFormData + "(req)"
-		reqStructStr = fillServiceCodeReqStruct(serviceName, formatStrSliceInLine(paramsWithInit))
+		reqStructStr = fillServiceCodeReqStruct(config, serviceName, formatStrSliceInLine(paramsWithInit))
 		paramsWithTypeStr = formatStrSliceInLine(paramsWithType)
 	}
 
@@ -119,13 +122,13 @@ func fillServiceCodeRequest(serviceName string, serviceURI string, messageFields
 	return res
 }
 
-func fillServiceCodeReqStruct(serviceName string, paramsWithInit string) string {
+func fillServiceCodeReqStruct(config *data.APIConfig, serviceName string, paramsWithInit string) string {
 	res := "\n" +
-	"{{ $indentation }}{{ $indentation }}let req: {{ $serviceName }}Req = {\n" +
-	"{{ $indentation }}{{ $indentation }}{{ $indentation }}{{ $paramsWithInit }}" +
-	"{{ $indentation }}{{ $indentation }}}\n"
+		"{{ $indentation }}{{ $indentation }}let req: {{ $serviceName }}Req = {\n" +
+		"{{ $indentation }}{{ $indentation }}{{ $indentation }}{{ $paramsWithInit }}" +
+		"{{ $indentation }}{{ $indentation }}}\n"
 
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(GetIndentation(1)))
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(config.GetIndentation(1)))
 	res = strings.ReplaceAll(res, "{{ $serviceName }}", serviceName)
 	res = strings.ReplaceAll(res, "{{ $paramsWithInit }}", paramsWithInit)
 
