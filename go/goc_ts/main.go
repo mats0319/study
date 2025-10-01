@@ -1,37 +1,38 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/mats9693/study/go/goc_ts/data"
 	"github.com/mats9693/study/go/goc_ts/generate_ts"
 	"github.com/mats9693/study/go/goc_ts/parse"
-	"log"
-	"os"
 )
 
 var apiIns = &data.API{
-	Config: &data.APIConfig{
-		BaseURL: "http://127.0.0.1:9693",
-		Timeout: 3_000,
-	},
-	Utils:   &data.APIUtils{},
-	Service: make(map[string][]*data.ServiceItem),
-	Message: make(map[string][]*data.MessageItem),
+	Config:      &data.APIConfig{},
+	Utils:       &data.APIUtils{},
+	Service:     make(map[string][]*data.ServiceItem),
+	Message:     make(map[string][]*data.MessageItem),
+	TsType:      make(map[string]string),
+	TsZeroValue: make(map[string]string),
 }
 
 func main() {
 	log.Println("> Goc_ts: Start.")
 	defer log.Println("> Goc_ts: Finish.")
 
-	emptyOutDir(outDir)
+	apiIns.SetConfigFromFile(configFile)
 
-	parse.ParseConfig(apiIns, dir)
-	parse.ParseGoFiles(apiIns, dir)
+	emptyOutDir(apiIns.Config.OutDir)
+
+	parse.ParseGoFiles(apiIns, apiIns.Config.Dir)
 	parse.ParseUtils(apiIns)
 
-	generate_ts.GenerateConfig(apiIns.Config, outDir)
-	generate_ts.GenerateUtils(apiIns.Utils, outDir)
-	generate_ts.GenerateServiceFiles(apiIns, outDir)
-	generate_ts.GenerateMessageFiles(apiIns, outDir)
+	generate_ts.GenerateConfig(apiIns.Config, apiIns.Config.OutDir)
+	generate_ts.GenerateUtils(apiIns.Utils, apiIns.Config.OutDir)
+	generate_ts.GenerateServiceFiles(apiIns, apiIns.Config.OutDir)
+	generate_ts.GenerateMessageFiles(apiIns, apiIns.Config.OutDir)
 }
 
 func emptyOutDir(outDir string) {

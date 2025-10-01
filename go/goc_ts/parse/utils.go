@@ -2,13 +2,14 @@ package parse
 
 import (
 	"github.com/mats9693/study/go/goc_ts/data"
+	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
 )
 
 func ParseUtils(apiIns *data.API) {
 ALL:
 	for filename, serviceItems := range apiIns.Service {
 		for i := range serviceItems {
-			messageName := serviceItems[i].Name + data.RequestMessageSuffix
+			messageName := serviceItems[i].Name + apiIns.Config.RequestMessageSuffix
 
 			hasValidMessage := false
 			for j := range apiIns.Message[filename] {
@@ -21,7 +22,7 @@ ALL:
 
 			if hasValidMessage {
 				apiIns.Utils.NeedObjectToFormData = true
-				apiIns.Utils.ObjectToFormData = []byte(data.FuncCodeIndentation(data.FunctionCode_ObjectToFormData))
+				apiIns.Utils.ObjectToFormData = []byte(code_template.FuncCodeIndentation(apiIns.Config, code_template.FunctionCode_ObjectToFormData))
 				break ALL
 			}
 		}

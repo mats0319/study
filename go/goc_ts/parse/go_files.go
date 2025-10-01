@@ -3,18 +3,19 @@ package parse
 import (
 	"bytes"
 	"fmt"
-	"github.com/mats9693/study/go/goc_ts/data"
 	"io/fs"
 	"log"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/mats9693/study/go/goc_ts/data"
 )
 
 var (
-	serviceRE      = regexp.MustCompile(`const\s+URI_(\w+)\s*=\s*"([/\w-]+)"`)
-	messageRE      = regexp.MustCompile(`type\s+(\w+)\s+struct\s*{([^}]*)}`)
-	messageFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)".*`)
+	ServiceRE      = regexp.MustCompile(`const\s+URI_(\w+)\s*=\s*"([/\w-]+)"`)
+	MessageRE      = regexp.MustCompile(`type\s+(\w+)\s+struct\s*{([^}]*)}`)
+	MessageFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)".*`)
 )
 
 func ParseGoFiles(apiIns *data.API, dir string) {
@@ -57,7 +58,7 @@ func parseFile(apiIns *data.API, dir string, filename string) {
 }
 
 func matchService(apiIns *data.API, filename string, fileBytes []byte) {
-	serviceREMatched := serviceRE.FindAllSubmatch(fileBytes, -1)
+	serviceREMatched := ServiceRE.FindAllSubmatch(fileBytes, -1)
 	for i := range serviceREMatched {
 		if len(serviceREMatched[i]) < 3 {
 			continue
@@ -71,7 +72,7 @@ func matchService(apiIns *data.API, filename string, fileBytes []byte) {
 }
 
 func matchMessage(apiIns *data.API, filename string, fileBytes []byte) {
-	messageREMatched := messageRE.FindAllSubmatch(fileBytes, -1)
+	messageREMatched := MessageRE.FindAllSubmatch(fileBytes, -1)
 	for i := range messageREMatched {
 		if len(messageREMatched[i]) < 3 {
 			continue
@@ -79,15 +80,15 @@ func matchMessage(apiIns *data.API, filename string, fileBytes []byte) {
 
 		apiIns.Message[filename] = append(apiIns.Message[filename], &data.MessageItem{
 			Name:   string(messageREMatched[i][1]),
-			Fields: matchMessageField(messageREMatched[i][2]),
+			Fields: matchMessageField(apiIns, messageREMatched[i][2]),
 		})
 	}
 }
 
-func matchMessageField(field []byte) []*data.MessageField {
+func matchMessageField(apiIns *data.API, field []byte) []*data.MessageField {
 	res := make([]*data.MessageField, 0)
 
-	messageFieldREMatched := messageFieldRE.FindAllSubmatch(field, -1)
+	messageFieldREMatched := MessageFieldRE.FindAllSubmatch(field, -1)
 	for i := range messageFieldREMatched {
 		if len(messageFieldREMatched[i]) < 3 {
 			continue
@@ -99,7 +100,7 @@ func matchMessageField(field []byte) []*data.MessageField {
 			IsArray: bytes.HasPrefix(messageFieldREMatched[i][1], []byte("[]")),
 		}
 
-		messageFieldToTs(fieldIns)
+		messageFieldToTs(apiIns, fieldIns)
 
 		res = append(res, fieldIns)
 	}
@@ -107,13 +108,13 @@ func matchMessageField(field []byte) []*data.MessageField {
 	return res
 }
 
-// messageFieldToTs according to 'field', get 'ts filed type' and 'ts field zero value'
-func messageFieldToTs(field *data.MessageField) {
-	v, ok := data.MessageFieldType[field.GoType]
+// messageFieldToTs according to 'field', generate 'ts filed type' and 'ts field zero value'
+func messageFieldToTs(apiIns *data.API, field *data.MessageField) {
+	v, ok := apiIns.TsType[field.GoType]
 	if ok { // base type, in type map
 		field.TSType = v
-		field.TSZeroValue = data.MessageFieldZeroValue[v]
-	} else { // not in map, self-define type
+		field.TSZeroValue = apiIns.TsZeroValue[v]
+	} else { // not in map, consider as self-define type
 		field.TSType = field.GoType
 		field.TSZeroValue = fmt.Sprintf("new %s()", field.GoType)
 	}

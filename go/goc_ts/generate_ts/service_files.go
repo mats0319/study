@@ -2,19 +2,23 @@ package generate_ts
 
 import (
 	"fmt"
-	"github.com/mats9693/study/go/goc_ts/data"
+
 	"log"
 	"os"
+
+	"github.com/mats9693/study/go/goc_ts/data"
+	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
 )
 
 func GenerateServiceFiles(apiIns *data.API, outDir string) {
 	for filename := range apiIns.Service {
-		absolutePath := outDir + filename + data.ServiceFileSuffix
-		generateServiceFile(absolutePath, apiIns.Service[filename], apiIns.Message[filename], filename)
+		absolutePath := outDir + filename + apiIns.Config.ServiceFileSuffix
+		generateServiceFile(apiIns.Config, absolutePath, apiIns.Service[filename], apiIns.Message[filename], filename)
 	}
 }
 
 func generateServiceFile(
+	config *data.APIConfig,
 	absolutePath string,
 	serviceItems []*data.ServiceItem,
 	messageItems []*data.MessageItem,
@@ -29,7 +33,7 @@ func generateServiceFile(
 	}()
 
 	content := data.Copyright
-	content = append(content, data.FormatServiceCode(serviceItems, messageItems, filename)...)
+	content = append(content, code_template.FormatServiceCode(config, serviceItems, messageItems, filename)...)
 
 	_, err = file.Write(content)
 	if err != nil {

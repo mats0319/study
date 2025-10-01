@@ -1,0 +1,18 @@
+{
+  "package_name": "api",
+  "files": [
+    {
+      "name": "list",
+      "api_list": [
+        {
+          "name": "GetList",
+          "uri": "/list/get"
+        },
+        {
+          "name": "GetOriginURL",
+          "uri": "/origin-url/get"
+        }
+      ]
+    }
+  ]
+}
