@@ -1,19 +1,21 @@
 package parse
 
 import (
+	"strings"
+
 	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
+	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func ParseUtils(apiIns *data.API) {
+func ParseUtils() {
 ALL:
-	for filename, serviceItems := range apiIns.Service {
+	for filename, serviceItems := range data.GeneratorIns.Services {
 		for i := range serviceItems {
-			messageName := serviceItems[i].Name + apiIns.Config.RequestMessageSuffix
+			messageName := serviceItems[i].Name + data.GeneratorIns.Config.RequestMessageSuffix
 
 			hasValidMessage := false
-			for j := range apiIns.Message[filename] {
-				messageItemIns := apiIns.Message[filename][j]
+			for j := range data.GeneratorIns.Messages[filename] {
+				messageItemIns := data.GeneratorIns.Messages[filename][j]
 				if messageItemIns.Name == messageName && len(messageItemIns.Fields) > 0 { // exist 'xxxReq' message, and not empty
 					hasValidMessage = true
 					break
@@ -21,10 +23,17 @@ ALL:
 			}
 
 			if hasValidMessage {
-				apiIns.Utils.NeedObjectToFormData = true
-				apiIns.Utils.ObjectToFormData = []byte(code_template.FuncCodeIndentation(apiIns.Config, code_template.FunctionCode_ObjectToFormData))
+				data.GeneratorIns.Utils.NeedObjectToFormData = true
+				data.GeneratorIns.Utils.ObjectToFormData = []byte(funcCodeIndentation(utils.FunctionCode_ObjectToFormData))
 				break ALL
 			}
 		}
 	}
+}
+
+func funcCodeIndentation(funcCode string) string {
+	res := funcCode
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
+
+	return res
 }

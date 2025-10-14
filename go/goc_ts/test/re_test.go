@@ -21,7 +21,7 @@ func TestServiceRE(t *testing.T) {
 func TestMessageRE(t *testing.T) {
 	// type Playlist struct {
 	// 	 ID          string  `json:"id" yaml:"id"`
-	// 	 Name        string  `json:"name" yaml:"name"`
+	// 	 FileName        string  `json:"name" yaml:"name"`
 	// 	 Description string  `json:"description" yaml:"description"`
 	// 	 MusicList   []Music `json:"music_list" yaml:"music_list"`
 	// }

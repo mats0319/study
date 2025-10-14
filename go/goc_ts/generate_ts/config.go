@@ -1,29 +1,32 @@
 package generate_ts
 
 import (
-	"log"
-	"os"
+	"strconv"
+	"strings"
 
 	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
+	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func GenerateConfig(config *data.APIConfig, outDir string) {
-	file, err := os.OpenFile(outDir+"config.ts", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-	if err != nil {
-		log.Fatalln("open config file failed, error: ", err)
-	}
-	defer func() {
-		_ = file.Close()
-	}()
+func GenerateConfig() {
+	content := utils.Copyright
+	content = append(content, []byte(serializeConfigCode())...)
 
-	_, err = file.Write(data.Copyright)
-	if err != nil {
-		log.Fatalln("write config file failed, error: ", err)
-	}
+	utils.WriteFile(data.GeneratorIns.Config.TsDir+"config.ts", content)
+}
 
-	_, err = file.Write([]byte(code_template.FormatConfigCode(config)))
-	if err != nil {
-		log.Fatalln("write config file failed, error: ", err)
-	}
+func serializeConfigCode() string {
+	res := `
+import axios, { AxiosInstance } from "axios";
+
+export const axiosWrapper: AxiosInstance = axios.create({
+{{ $indentation }}baseURL: "{{ $baseURL }}",
+{{ $indentation }}timeout: {{ $timeout }},
+});
+`
+	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
+	res = strings.ReplaceAll(res, "{{ $baseURL }}", data.GeneratorIns.Config.BaseURL)
+	res = strings.ReplaceAll(res, "{{ $timeout }}", strconv.Itoa(int(data.GeneratorIns.Config.Timeout)))
+
+	return res
 }

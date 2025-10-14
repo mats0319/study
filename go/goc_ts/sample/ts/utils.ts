@@ -1,6 +1,7 @@
 // Generate File, Should not Edit.
-// Author: mario. https://github.com/mats9693
-// Version: goc_ts v0.2.1
+// Author : mario. github.com/mats0319
+// Code   : github.com/mats0319/study/go/goc_ts
+// Version: goc_ts v0.3.1
 
 // objectToFormData 泛型用于解决'obj[key]'报错问题
 export function objectToFormData<T extends object>(obj: T): FormData {

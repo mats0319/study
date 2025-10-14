@@ -6,34 +6,58 @@ import (
 	"os"
 
 	"github.com/mats9693/study/go/goc_ts/data"
+	"github.com/mats9693/study/go/goc_ts/initialize"
+	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
 var (
 	help       bool
 	version    bool
 	configFile string
-	initialize bool
-	generateGo string
+
+	initializeFlag bool
+
+	generateGoFlag bool
+	generateGoFrom string
 )
 
 func init() {
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version")
 	flag.StringVar(&configFile, "c", "./go/config.json", "config file")
-	flag.BoolVar(&initialize, "i", false, "initialize basic files\n"+
-		"overwrite 'config_default.json' and 'init_sample.json'")
-	flag.StringVar(&generateGo, "g", "./go/init.json", "generate go api definition files\n"+
-		"make sure param names are equal")
+	flag.BoolVar(&initializeFlag, "i", false, "initializeFlag basic files\n"+
+		"overwrite './go/config_default.json' and './go/init_default.json'")
+	flag.BoolVar(&generateGoFlag, "g", false, "generate go files from './go/init.json'\n")
+	flag.StringVar(&generateGoFrom, "genFrom", "", "generate go files from given file")
 
 	flag.Parse()
 
 	if help {
-		log.Println("Options: ")
+		log.Println("Options: \n(In this help, './go/' means our go files dir)")
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
 	if version {
-		log.Println(data.Version)
+		log.Println(utils.Version)
+		os.Exit(0)
+	}
+
+	data.SetConfig(configFile)
+
+	if initializeFlag {
+		initialize.OnInitialize()
+		os.Exit(0)
+	}
+
+	if generateGoFlag || len(generateGoFrom) > 0 {
+		initFileName := ""
+		if generateGoFlag {
+			initFileName = data.GeneratorIns.Config.GoDir + "init.json"
+		} else {
+			initFileName = generateGoFrom
+		}
+
+		initialize.OnGenerate(initFileName)
 		os.Exit(0)
 	}
 }
