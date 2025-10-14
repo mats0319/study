@@ -1,16 +1,16 @@
 {
-  "package_name": "api",
   "files": [
     {
-      "name": "list",
+      "file_name": "demo",
+      "package_name": "api",
       "api_list": [
         {
-          "name": "GetList",
-          "uri": "/list/get"
+          "name": "ListUser",
+          "uri": "/user/list"
         },
         {
-          "name": "GetOriginURL",
-          "uri": "/origin-url/get"
+          "name": "CreateUser",
+          "uri": "/user/create"
         }
       ]
     }

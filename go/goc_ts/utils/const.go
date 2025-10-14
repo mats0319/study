@@ -1,12 +1,12 @@
-package code_template
+package utils
 
-import (
-	"strings"
+var Copyright = []byte("// Generate File, Should not Edit.\n" +
+	"// Author : mario. github.com/mats0319\n" +
+	"// Code   : github.com/mats0319/study/go/goc_ts\n" +
+	"// Version: " + Version + "\n")
+var Version = "goc_ts v0.3.1"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-)
-
-const functionName_ObjectToFormData = "objectToFormData"
+const FunctionName_ObjectToFormData = "objectToFormData"
 
 const FunctionCode_ObjectToFormData = `
 // objectToFormData 泛型用于解决'obj[key]'报错问题
@@ -25,10 +25,3 @@ export function objectToFormData<T extends object>(obj: T): FormData {
 {{ $indentation }}return data
 }
 `
-
-func FuncCodeIndentation(config *data.APIConfig, funcCode string) string {
-	res := funcCode
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(config.GetIndentation(1)))
-
-	return res
-}

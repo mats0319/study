@@ -1,39 +1,42 @@
 package generate_ts
 
 import (
-	"fmt"
-
-	"log"
-	"os"
+	"strings"
 
 	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/generate_ts/code_template"
+	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func GenerateMessageFiles(apiIns *data.API, outDir string) {
-	for filename := range apiIns.Message {
-		absolutePath := outDir + filename + apiIns.Config.MessageFileSuffix
-		generateMessageFile(apiIns.Config, absolutePath, apiIns.Message[filename])
+func GenerateMessageFiles() {
+	for filename := range data.GeneratorIns.Messages {
+		content := utils.Copyright
+		for i := range data.GeneratorIns.Messages[filename] {
+			content = append(content, serializeMessage(data.GeneratorIns.Messages[filename][i])...)
+		}
+
+		absolutePath := data.GeneratorIns.Config.TsDir + filename + data.GeneratorIns.Config.MessageFileSuffix
+		utils.WriteFile(absolutePath, content)
 	}
 }
 
-// generateMessageFile write in formatData single function, mainly for 'defer file.close', avoid hold many file handles
-func generateMessageFile(config *data.APIConfig, absolutePath string, messageItems []*data.MessageItem) {
-	file, err := os.OpenFile(absolutePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("open message file(%s) failed, error: %v\n", absolutePath, err))
-	}
-	defer func() {
-		_ = file.Close()
-	}()
+func serializeMessage(message *data.MessageItem) string {
+	fieldsStr := ""
+	for i := range message.Fields {
+		field := "{{ $indentation }}{{ $fieldName }}: {{ $fieldTSType }} = {{ $fieldTSZeroValue }};\n"
+		field = strings.ReplaceAll(field, "{{ $fieldName }}", message.Fields[i].Name)
+		field = strings.ReplaceAll(field, "{{ $fieldTSType }}", message.Fields[i].TSType)
+		field = strings.ReplaceAll(field, "{{ $fieldTSZeroValue }}", message.Fields[i].TSZeroValue)
 
-	content := data.Copyright
-	for i := range messageItems {
-		content = append(content, code_template.FormatMessage(config, messageItems[i])...)
+		fieldsStr += field
 	}
+	fieldsStr = strings.ReplaceAll(fieldsStr, "{{ $indentation }}", string(data.GetIndentation()))
 
-	_, err = file.Write(content)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("write message file(%s) failed, error: %v\n", absolutePath, err))
-	}
+	res := "\n" +
+		"export class {{ $messageName }} {\n" +
+		"{{ $messageCode_Fields }}" +
+		"}\n"
+	res = strings.ReplaceAll(res, "{{ $messageName }}", message.Name)
+	res = strings.ReplaceAll(res, "{{ $messageCode_Fields }}", fieldsStr)
+
+	return res
 }

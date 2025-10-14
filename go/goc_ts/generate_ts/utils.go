@@ -2,32 +2,20 @@ package generate_ts
 
 import (
 	"github.com/mats9693/study/go/goc_ts/data"
-	"log"
-	"os"
+	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func GenerateUtils(utils *data.APIUtils, outDir string) {
-	if !utils.NeedObjectToFormData { // if all bool variables are false, not create 'utils' file
+func GenerateUtils() {
+	if !data.GeneratorIns.Utils.NeedObjectToFormData { // if all bool variables are false, not create 'utils' file
 		return
 	}
 
-	file, err := os.OpenFile(outDir+"utils.ts", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-	if err != nil {
-		log.Fatalln("open utils file failed, error: ", err)
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
-	content := data.Copyright
+	content := utils.Copyright
 
 	// functions
-	if utils.NeedObjectToFormData {
-		content = append(content, utils.ObjectToFormData...)
+	if data.GeneratorIns.Utils.NeedObjectToFormData {
+		content = append(content, data.GeneratorIns.Utils.ObjectToFormData...)
 	}
 
-	_, err = file.Write(content)
-	if err != nil {
-		log.Fatalln("write utils file failed, error: ", err)
-	}
+	utils.WriteFile(data.GeneratorIns.Config.TsDir+"utils.ts", content)
 }
