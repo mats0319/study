@@ -10,12 +10,12 @@ import (
 
 func GenerateConfig() {
 	content := utils.Copyright
-	content = append(content, []byte(serializeConfigCode())...)
+	content = append(content, serializeConfigFile()...)
 
 	utils.WriteFile(data.GeneratorIns.Config.TsDir+"config.ts", content)
 }
 
-func serializeConfigCode() string {
+func serializeConfigFile() string {
 	res := `
 import axios, { AxiosInstance } from "axios";
 
@@ -26,7 +26,7 @@ export const axiosWrapper: AxiosInstance = axios.create({
 `
 	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
 	res = strings.ReplaceAll(res, "{{ $baseURL }}", data.GeneratorIns.Config.BaseURL)
-	res = strings.ReplaceAll(res, "{{ $timeout }}", strconv.Itoa(int(data.GeneratorIns.Config.Timeout)))
+	res = strings.ReplaceAll(res, "{{ $timeout }}", strconv.Itoa(data.GeneratorIns.Config.Timeout))
 
 	return res
 }

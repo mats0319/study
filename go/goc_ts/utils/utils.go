@@ -25,15 +25,6 @@ func WriteFile(filename string, content []byte) {
 	log.Println("Generated file: ", filename)
 }
 
-// MustGoFileName make sure 'filename' is end with '.go', e.g. "demo" => "demo.go"
-func MustGoFileName(fileName string) string {
-	if !strings.HasSuffix(fileName, ".go") {
-		fileName += ".go"
-	}
-
-	return fileName
-}
-
 // FormatStrSliceInLine e.g. ["a","b","c"] => "a, b, c"
 func FormatStrSliceInLine(data []string) string {
 	if len(data) < 1 {
@@ -66,19 +57,6 @@ func MustBig(str string) string {
 	return str
 }
 
-// EmptyDir del and re-make dir
-func EmptyDir(dir string) {
-	err := os.RemoveAll(dir)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("rm %s failed, error: ", dir), err)
-	}
-
-	err = os.MkdirAll(dir, 0777)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("'mkdir' on %s failed, error: ", dir), err)
-	}
-}
-
 func MustExistDir(dir string) {
 	err := os.MkdirAll(dir, 0777)
 	if err != nil {
@@ -86,11 +64,21 @@ func MustExistDir(dir string) {
 	}
 }
 
-// MustDir make sure 'path' is end with '/'
-func MustDir(path string) string {
-	if !strings.HasSuffix(path, "/") {
-		path = path + "/"
+// EmptyDir del and re-make dir
+func EmptyDir(dir string) {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		log.Fatalln(fmt.Sprintf("rm %s failed, error: ", dir), err)
 	}
 
-	return path
+	MustExistDir(dir)
+}
+
+// MustSuffix make sure 'str' is end with 'suffix'
+func MustSuffix(str string, suffix string) string {
+	if !strings.HasSuffix(str, suffix) {
+		str += suffix
+	}
+
+	return str
 }

@@ -9,23 +9,21 @@ import (
 
 func ParseUtils() {
 ALL:
-	for filename, serviceItems := range data.GeneratorIns.Services {
-		for i := range serviceItems {
-			messageName := serviceItems[i].Name + data.GeneratorIns.Config.RequestMessageSuffix
+	for filename, requestNames := range data.GeneratorIns.RequestAffiliation {
+		for _, requestName := range requestNames {
+			reqStructureName := requestName + data.GeneratorIns.Config.RequestStructureSuffix
 
-			hasValidMessage := false
-			for j := range data.GeneratorIns.Messages[filename] {
-				messageItemIns := data.GeneratorIns.Messages[filename][j]
-				if messageItemIns.Name == messageName && len(messageItemIns.Fields) > 0 { // exist 'xxxReq' message, and not empty
-					hasValidMessage = true
-					break
+			for _, structureName := range data.GeneratorIns.StructureAffiliation[filename] {
+				if structureName != reqStructureName {
+					continue
 				}
-			}
 
-			if hasValidMessage {
-				data.GeneratorIns.Utils.NeedObjectToFormData = true
-				data.GeneratorIns.Utils.ObjectToFormData = []byte(funcCodeIndentation(utils.FunctionCode_ObjectToFormData))
-				break ALL
+				structureItemIns, ok := data.GeneratorIns.Structures[structureName]
+				if ok && len(structureItemIns.Fields) > 0 { // exist 'xxxReq' message, and not empty
+					data.GeneratorIns.Utils.NeedObjectToFormData = true
+					data.GeneratorIns.Utils.ObjectToFormData = []byte(funcCodeIndentation(utils.FunctionCode_ObjectToFormData))
+					break ALL
+				}
 			}
 		}
 	}

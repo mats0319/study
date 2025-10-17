@@ -1,1 +1,1 @@
-{"files":[{"file_name":"demo","package_name":"api","api_list":[{"name":"ListUser","uri":"/user/list"},{"name":"CreateUser","uri":"/user/create"}]}]}
+{"package_name":"api","files":[{"file_name":"demo","api_list":[{"name":"ListUser","uri":"/user/list"},{"name":"CreateUser","uri":"/user/create"}]}]}

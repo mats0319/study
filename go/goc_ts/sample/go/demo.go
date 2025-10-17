@@ -13,9 +13,9 @@ type ListUserReq struct {
 }
 
 type ListUserRes struct {
-	IsSuccess bool     `json:"is_success"`
-	Summary   int64    `json:"summary"`
-	Users     []string `json:"users"`
+	Res     ResBase  `json:"res"`
+	Summary int64    `json:"summary"`
+	Users   []string `json:"users"`
 }
 
 const URI_CreateUser = "/user/create"
