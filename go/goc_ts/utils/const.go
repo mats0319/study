@@ -1,10 +1,10 @@
 package utils
 
-var Copyright = []byte("// Generate File, Should not Edit.\n" +
+var Copyright = []byte("// Generate File, Should Not Edit.\n" +
 	"// Author : mario. github.com/mats0319\n" +
 	"// Code   : github.com/mats0319/study/go/goc_ts\n" +
 	"// Version: " + Version + "\n")
-var Version = "goc_ts v0.3.1"
+var Version = "goc_ts v0.4.0"
 
 const FunctionName_ObjectToFormData = "objectToFormData"
 

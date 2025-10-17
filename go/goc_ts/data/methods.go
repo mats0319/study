@@ -8,7 +8,7 @@ import (
 	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func SetConfig(configFile string) {
+func Initialize(configFile string) {
 	fileBytes, err := os.ReadFile(configFile)
 
 	configIns := &Config{}
@@ -20,12 +20,8 @@ func SetConfig(configFile string) {
 		log.Println("> Goc_ts: Use config file: ", configFile)
 	}
 
-	configIns.useDefaultConfigForEmpty()
-
-	utils.MustDir(configIns.GoDir)
-	utils.MustDir(configIns.TsDir)
-	utils.MustExistDir(configIns.GoDir)
-	utils.EmptyDir(configIns.TsDir)
+	configIns.mustValid()
+	GeneratorIns.Config = configIns
 
 	// set type maps
 	for _, typ := range configIns.BasicGoType {
@@ -34,8 +30,6 @@ func SetConfig(configFile string) {
 		}
 		GeneratorIns.TsZeroValue[typ.TsType] = typ.TsZeroValue
 	}
-
-	GeneratorIns.Config = configIns
 }
 
 func GetIndentation() []byte {
@@ -46,32 +40,45 @@ func GetIndentation() []byte {
 	return res
 }
 
-// use default config cover empty config
-func (c *Config) useDefaultConfigForEmpty() {
+// make sure all configs are valid, use default config cover empty ones
+func (c *Config) mustValid() {
 	if len(c.GoDir) < 1 {
 		c.GoDir = DefaultGeneratorConfig.GoDir
+	} else {
+		c.GoDir = utils.MustSuffix(c.GoDir, "/")
 	}
 	if len(c.TsDir) < 1 {
 		c.TsDir = DefaultGeneratorConfig.TsDir
+	} else {
+		c.TsDir = utils.MustSuffix(c.TsDir, "/")
 	}
+	utils.MustExistDir(c.GoDir)
+	utils.EmptyDir(c.TsDir)
+
 	if len(c.BaseURL) < 1 {
 		c.BaseURL = DefaultGeneratorConfig.BaseURL
 	}
 	if c.Timeout < 1 {
 		c.Timeout = DefaultGeneratorConfig.Timeout
 	}
-	if len(c.RequestMessageSuffix) < 1 {
-		c.RequestMessageSuffix = DefaultGeneratorConfig.RequestMessageSuffix
+
+	if len(c.RequestStructureSuffix) < 1 {
+		c.RequestStructureSuffix = DefaultGeneratorConfig.RequestStructureSuffix
 	}
-	if len(c.ResponseMessageSuffix) < 1 {
-		c.ResponseMessageSuffix = DefaultGeneratorConfig.ResponseMessageSuffix
+	if len(c.ResponseStructureSuffix) < 1 {
+		c.ResponseStructureSuffix = DefaultGeneratorConfig.ResponseStructureSuffix
 	}
-	if len(c.ServiceFileSuffix) < 1 {
-		c.ServiceFileSuffix = DefaultGeneratorConfig.ServiceFileSuffix
+	if len(c.RequestFileSuffix) < 1 {
+		c.RequestFileSuffix = DefaultGeneratorConfig.RequestFileSuffix
+	} else {
+		c.RequestFileSuffix = utils.MustSuffix(c.RequestFileSuffix, ".ts")
 	}
-	if len(c.MessageFileSuffix) < 1 {
-		c.MessageFileSuffix = DefaultGeneratorConfig.MessageFileSuffix
+	if len(c.StructureFileSuffix) < 1 {
+		c.StructureFileSuffix = DefaultGeneratorConfig.StructureFileSuffix
+	} else {
+		c.StructureFileSuffix = utils.MustSuffix(c.StructureFileSuffix, ".ts")
 	}
+
 	if len(c.BasicGoType) < 1 {
 		c.BasicGoType = DefaultGeneratorConfig.BasicGoType
 	}

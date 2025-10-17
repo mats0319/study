@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ServiceRE      = regexp.MustCompile(`const\s+URI_(\w+)\s*=\s*"([/\w-]+)"`)
-	MessageRE      = regexp.MustCompile(`type\s+(\w+)\s+struct\s*{([^}]*)}`)
-	MessageFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)".*`)
+	RequestRE        = regexp.MustCompile(`const\s+URI_(\w+)\s*=\s*"([/\w-]+)"`)
+	StructureRE      = regexp.MustCompile(`type\s+(\w+)\s+struct\s*{([^}]*)}`)
+	StructureFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)".*`)
 )
 
 func ParseGoFiles() {
@@ -48,60 +48,67 @@ func parseFile(filename string) {
 	absolutePath := data.GeneratorIns.Config.GoDir + filename
 	fileBytes, err := os.ReadFile(absolutePath)
 	if err != nil {
-		log.Println(fmt.Sprintf("read go file(%s) failed, error: %v\n", absolutePath, err))
-		return
+		log.Fatalln(fmt.Sprintf("read go file(%s) failed, error: %v", absolutePath, err))
 	}
 
 	filename = strings.TrimSuffix(filename, ".go")
 
-	matchService(filename, fileBytes)
-	matchMessage(filename, fileBytes)
+	matchRequests(filename, fileBytes)
+	matchStructures(filename, fileBytes)
 }
 
-func matchService(filename string, fileBytes []byte) {
-	serviceREMatched := ServiceRE.FindAllSubmatch(fileBytes, -1)
-	for i := range serviceREMatched {
-		if len(serviceREMatched[i]) < 3 {
+func matchRequests(filename string, fileBytes []byte) {
+	requestREMatched := RequestRE.FindAllSubmatch(fileBytes, -1)
+	for i := range requestREMatched {
+		if len(requestREMatched[i]) < 3 {
 			continue
 		}
 
-		data.GeneratorIns.Services[filename] = append(data.GeneratorIns.Services[filename], &data.ServiceItem{
-			Name: string(serviceREMatched[i][1]),
-			URI:  string(serviceREMatched[i][2]),
-		})
+		requestName := string(requestREMatched[i][1])
+		requestURI := string(requestREMatched[i][2])
+
+		data.GeneratorIns.RequestAffiliation[filename] = append(data.GeneratorIns.RequestAffiliation[filename], requestName)
+		data.GeneratorIns.Requests[requestName] = requestURI
 	}
 }
 
-func matchMessage(filename string, fileBytes []byte) {
-	messageREMatched := MessageRE.FindAllSubmatch(fileBytes, -1)
-	for i := range messageREMatched {
-		if len(messageREMatched[i]) < 3 {
+func matchStructures(filename string, fileBytes []byte) {
+	structureREMatched := StructureRE.FindAllSubmatch(fileBytes, -1)
+	for i := range structureREMatched {
+		if len(structureREMatched[i]) < 3 {
 			continue
 		}
 
-		data.GeneratorIns.Messages[filename] = append(data.GeneratorIns.Messages[filename], &data.MessageItem{
-			Name:   string(messageREMatched[i][1]),
-			Fields: matchMessageFields(messageREMatched[i][2]),
-		})
+		structureName := string(structureREMatched[i][1])
+		if !strings.HasSuffix(structureName, data.GeneratorIns.Config.RequestStructureSuffix) &&
+			!strings.HasSuffix(structureName, data.GeneratorIns.Config.ResponseStructureSuffix) {
+			// self-define struct, record it's from
+			data.GeneratorIns.StructureFrom[structureName] = filename
+		}
+
+		data.GeneratorIns.StructureAffiliation[filename] = append(data.GeneratorIns.StructureAffiliation[filename], structureName)
+		data.GeneratorIns.Structures[structureName] = &data.StructureItem{
+			Fields: matchStructureFields(structureREMatched[i][2]),
+		}
 	}
 }
 
-func matchMessageFields(field []byte) []*data.MessageField {
-	res := make([]*data.MessageField, 0)
+func matchStructureFields(field []byte) []*data.StructureField {
+	res := make([]*data.StructureField, 0)
 
-	messageFieldREMatched := MessageFieldRE.FindAllSubmatch(field, -1)
-	for i := range messageFieldREMatched {
-		if len(messageFieldREMatched[i]) < 3 {
+	structureFieldREMatched := StructureFieldRE.FindAllSubmatch(field, -1)
+	for i := range structureFieldREMatched {
+		if len(structureFieldREMatched[i]) < 3 {
 			continue
 		}
 
-		fieldIns := &data.MessageField{
-			Name:    string(messageFieldREMatched[i][2]),
-			GoType:  string(bytes.TrimPrefix(messageFieldREMatched[i][1], []byte("[]"))),
-			IsArray: bytes.HasPrefix(messageFieldREMatched[i][1], []byte("[]")),
+		fieldIns := &data.StructureField{
+			Name:    string(structureFieldREMatched[i][2]),
+			GoType:  string(bytes.TrimPrefix(structureFieldREMatched[i][1], []byte("[]"))),
+			IsArray: bytes.HasPrefix(structureFieldREMatched[i][1], []byte("[]")),
 		}
 
-		messageFieldToTs(fieldIns)
+		getTsTypeAndZeroValue(fieldIns)
 
 		res = append(res, fieldIns)
 	}
@@ -109,8 +116,8 @@ func matchMessageFields(field []byte) []*data.MessageField {
 	return res
 }
 
-// messageFieldToTs according to 'field', generate 'ts filed type' and 'ts field zero value'
-func messageFieldToTs(field *data.MessageField) {
+// getTsTypeAndZeroValue according to 'field', record 'ts filed type' and 'ts field zero value'
+func getTsTypeAndZeroValue(field *data.StructureField) {
 	v, ok := data.GeneratorIns.TsType[field.GoType]
 	if ok { // basic type, in type map
 		field.TSType = v

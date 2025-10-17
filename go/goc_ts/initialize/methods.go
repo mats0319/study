@@ -7,33 +7,31 @@ import (
 	"github.com/mats9693/study/go/goc_ts/utils"
 )
 
-func (ins *GoAPIFile) toGo() {
-	content := "package {{ $PackageName }}\n"
-	content = strings.ReplaceAll(content, "{{ $PackageName }}", ins.PackageName)
+func (ins *GoAPIFile) writeFile(packageName string) {
+	content := "package {{ $packageName }}\n"
+	content = strings.ReplaceAll(content, "{{ $packageName }}", packageName)
 
 	for i := range ins.APIList {
 		content += ins.APIList[i].toGo()
 	}
 
-	ins.FileName = utils.MustGoFileName(ins.FileName)
+	ins.FileName = utils.MustSuffix(ins.FileName, ".go")
 	utils.WriteFile(data.GeneratorIns.Config.GoDir+ins.FileName, []byte(content))
-
-	return
 }
 
 func (ins *APIItem) toGo() string {
 	res := `
-const URI_{{ $APIName }} = "{{ $APIURI }}"
+const URI_{{ $apiName }} = "{{ $apiURI }}"
 
-type {{ $APIName }}{{ $ReqSuffix }} struct {}
+type {{ $apiName }}{{ $reqSuffix }} struct {}
 
-type {{ $APIName }}{{ $ResSuffix }} struct {}
+type {{ $apiName }}{{ $resSuffix }} struct {}
 `
 
-	res = strings.ReplaceAll(res, "{{ $APIName }}", ins.Name)
-	res = strings.ReplaceAll(res, "{{ $APIURI }}", ins.URI)
-	res = strings.ReplaceAll(res, "{{ $ReqSuffix }}", data.GeneratorIns.Config.RequestMessageSuffix)
-	res = strings.ReplaceAll(res, "{{ $ResSuffix }}", data.GeneratorIns.Config.ResponseMessageSuffix)
+	res = strings.ReplaceAll(res, "{{ $apiName }}", ins.Name)
+	res = strings.ReplaceAll(res, "{{ $apiURI }}", ins.URI)
+	res = strings.ReplaceAll(res, "{{ $reqSuffix }}", data.GeneratorIns.Config.RequestStructureSuffix)
+	res = strings.ReplaceAll(res, "{{ $resSuffix }}", data.GeneratorIns.Config.ResponseStructureSuffix)
 
 	return res
 }

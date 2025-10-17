@@ -42,7 +42,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	data.SetConfig(configFile)
+	data.Initialize(configFile)
 
 	if initializeFlag {
 		initialize.OnInitialize()

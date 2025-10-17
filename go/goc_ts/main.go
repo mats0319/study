@@ -16,6 +16,6 @@ func main() {
 
 	generate_ts.GenerateConfig()
 	generate_ts.GenerateUtils()
-	generate_ts.GenerateServiceFiles()
-	generate_ts.GenerateMessageFiles()
+	generate_ts.GenerateRequestFiles()
+	generate_ts.GenerateStructureFiles()
 }

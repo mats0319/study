@@ -1,8 +1,8 @@
 {
+  "package_name": "api",
   "files": [
     {
       "file_name": "demo",
-      "package_name": "api",
       "api_list": [
         {
           "name": "ListUser",

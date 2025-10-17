@@ -1,22 +1,29 @@
 package data
 
 type Generator struct {
-	Config   *Config
-	Utils    *Utils
-	Services map[string][]*ServiceItem // filename - service items
-	Messages map[string][]*MessageItem // filename - message items
+	Config *Config
+	Utils  *Utils
+
+	RequestAffiliation   map[string][]string       // filename - request name(s)
+	Requests             map[string]string         // request name - request uri
+	StructureAffiliation map[string][]string       // filename - structure name(s)
+	Structures           map[string]*StructureItem // structure name - structure item
+	StructureFrom        map[string]string         // (self-define) structure name - from filename
 
 	TsType      map[string]string // go type - ts type
 	TsZeroValue map[string]string // ts type - ts zero value
 }
 
 var GeneratorIns = &Generator{
-	Config:      &Config{},
-	Utils:       &Utils{},
-	Services:    make(map[string][]*ServiceItem),
-	Messages:    make(map[string][]*MessageItem),
-	TsType:      make(map[string]string),
-	TsZeroValue: make(map[string]string),
+	Config:               &Config{},
+	Utils:                &Utils{},
+	RequestAffiliation:   make(map[string][]string),
+	Requests:             make(map[string]string),
+	StructureAffiliation: make(map[string][]string),
+	Structures:           make(map[string]*StructureItem),
+	StructureFrom:        make(map[string]string),
+	TsType:               make(map[string]string),
+	TsZeroValue:          make(map[string]string),
 }
 
 type Config struct {
@@ -25,12 +32,12 @@ type Config struct {
 	TsDir string `json:"ts_dir"`
 	// axios config
 	BaseURL string `json:"base_url"`
-	Timeout int64  `json:"timeout"` // unit: micro-second
+	Timeout int    `json:"timeout"` // unit: micro-second
 	// naming conventions 命名规范/约定
-	RequestMessageSuffix  string `json:"request_message_suffix"`
-	ResponseMessageSuffix string `json:"response_message_suffix"`
-	ServiceFileSuffix     string `json:"service_file_suffix"`
-	MessageFileSuffix     string `json:"message_file_suffix"`
+	RequestStructureSuffix  string `json:"request_structure_suffix"`
+	ResponseStructureSuffix string `json:"response_structure_suffix"`
+	RequestFileSuffix       string `json:"request_file_suffix"`
+	StructureFileSuffix     string `json:"structure_file_suffix"`
 	// params
 	BasicGoType []struct {
 		GoType      []string `json:"go_type"`
@@ -45,17 +52,11 @@ type Utils struct {
 	ObjectToFormData     []byte
 }
 
-type ServiceItem struct {
-	Name string
-	URI  string
+type StructureItem struct {
+	Fields []*StructureField
 }
 
-type MessageItem struct {
-	Name   string
-	Fields []*MessageField
-}
-
-type MessageField struct {
+type StructureField struct {
 	Name        string // field name, from json tag of go struct field
 	GoType      string
 	IsArray     bool
@@ -64,14 +65,14 @@ type MessageField struct {
 }
 
 var DefaultGeneratorConfig = &Config{
-	GoDir:                 "./go/",
-	TsDir:                 "./ts/",
-	BaseURL:               "http://127.0.0.1:9693",
-	Timeout:               3_000,
-	RequestMessageSuffix:  "Req",
-	ResponseMessageSuffix: "Res",
-	ServiceFileSuffix:     ".http.ts",
-	MessageFileSuffix:     ".go.ts",
+	GoDir:                   "./go/",
+	TsDir:                   "./ts/",
+	BaseURL:                 "http://127.0.0.1:9693",
+	Timeout:                 3_000,
+	RequestStructureSuffix:  "Req",
+	ResponseStructureSuffix: "Res",
+	RequestFileSuffix:       ".http.ts",
+	StructureFileSuffix:     ".go.ts",
 	BasicGoType: []struct {
 		GoType      []string `json:"go_type"`
 		TsType      string   `json:"ts_type"`
@@ -83,7 +84,8 @@ var DefaultGeneratorConfig = &Config{
 			TsZeroValue: `""`,
 		},
 		{
-			GoType:      []string{"int", "int8", "int32", "int64"},
+			GoType: []string{"int", "int8", "int16", "int32", "int64",
+				"uint", "uint8", "uint16", "uint32", "uint64"},
 			TsType:      "number",
 			TsZeroValue: `0`,
 		},

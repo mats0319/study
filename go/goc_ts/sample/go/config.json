@@ -1,1 +1,43 @@
-{"go_dir":"./go/","ts_dir":"./ts/","base_url":"http://127.0.0.1:9693","timeout":3000,"request_message_suffix":"Req","response_message_suffix":"Res","service_file_suffix":".http.ts","message_file_suffix":".go.ts","basic_go_type":[{"go_type":["string"],"ts_type":"string","ts_zero_value":"\"\""},{"go_type":["int","int8","int32","int64"],"ts_type":"number","ts_zero_value":"0"},{"go_type":["bool"],"ts_type":"boolean","ts_zero_value":"false"}],"indentation":4}
+{
+  "go_dir": "./go/",
+  "ts_dir": "./ts/",
+  "base_url": "http://127.0.0.1:9693",
+  "timeout": 3000,
+  "request_structure_suffix": "Req",
+  "response_structure_suffix": "Res",
+  "request_file_suffix": ".http.ts",
+  "structure_file_suffix": ".go.ts",
+  "basic_go_type": [
+    {
+      "go_type": [
+        "string"
+      ],
+      "ts_type": "string",
+      "ts_zero_value": "\"\""
+    },
+    {
+      "go_type": [
+        "int",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "uint",
+        "uint8",
+        "uint16",
+        "uint32",
+        "uint64"
+      ],
+      "ts_type": "number",
+      "ts_zero_value": "0"
+    },
+    {
+      "go_type": [
+        "bool"
+      ],
+      "ts_type": "boolean",
+      "ts_zero_value": "false"
+    }
+  ],
+  "indentation": 4
+}
