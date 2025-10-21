@@ -5,6 +5,12 @@
 
 import { ResBase } from "./common.go"
 
+export enum UserIdentify {
+    UserIdentify_Administrator = 0,
+    UserIdentify_VIP = 1,
+    UserIdentify_Visitor = 2,
+}
+
 export class Pagination {
     page_num: number = 0;
     page_size: number = 0;
@@ -12,6 +18,7 @@ export class Pagination {
 
 export class ListUserReq {
     operator: string = "";
+    list_identify: UserIdentify = new UserIdentify();
     page: Pagination = new Pagination();
 }
 

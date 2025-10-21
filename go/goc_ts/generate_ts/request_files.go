@@ -44,9 +44,9 @@ export const {{ $filename }}Axios: {{ $filenameBig }}Axios = new {{ $filenameBig
 // prepareData prepare 'structures' / 'import functions' / 'http request invokes' of service code
 func prepareData(filename string) (string, string, string) {
 	var (
-		structures = make(map[string][]string) // from filename - structures' name
-		functions  = make(map[string]struct{}) // key: func name
-		requests   = ""
+		externalStructures = make(map[string][]string) // from filename - structures' name
+		functions          = make(map[string]struct{}) // key: func name
+		requests           = ""
 	)
 
 	for _, requestName := range data.GeneratorIns.RequestAffiliation[filename] {
@@ -60,18 +60,18 @@ func prepareData(filename string) (string, string, string) {
 			}
 		}
 
-		messageResName := requestName + data.GeneratorIns.Config.ResponseStructureSuffix
-		structures[filename] = append(structures[filename], messageResName)
+		responseResName := requestName + data.GeneratorIns.Config.ResponseStructureSuffix
+		externalStructures[filename] = append(externalStructures[filename], responseResName)
 
 		if len(structureItemIns.Fields) > 0 { // a http request need input param(s)
-			structures[filename] = append(structures[filename], reqStructureName)
+			externalStructures[filename] = append(externalStructures[filename], reqStructureName)
 
 			functions[utils.FunctionName_ObjectToFormData] = struct{}{} // if 'xxxReq' has field(s), need this func
 
 			for _, structureField := range structureItemIns.Fields {
 				if _, ok := data.GeneratorIns.TsType[structureField.GoType]; !ok {
-					fromFile, _ := data.GeneratorIns.StructureFrom[structureField.GoType]
-					structures[fromFile] = append(structures[fromFile], structureField.GoType)
+					fromFile, _ := data.GeneratorIns.TypeFrom[structureField.GoType]
+					externalStructures[fromFile] = append(externalStructures[fromFile], structureField.TSType)
 				}
 			}
 		}
@@ -79,7 +79,7 @@ func prepareData(filename string) (string, string, string) {
 		requests += serializeOneHttpRequestInvoke(requestName, structureItemIns)
 	}
 
-	return serializeStructuresImport(structures), serializeExternalFunctionsImport(functions), requests
+	return serializeStructuresImport(externalStructures), serializeExternalFunctionsImport(functions), requests
 }
 
 // serializeExternalFunctionsImport serialize import external functions statement

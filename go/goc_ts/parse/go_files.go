@@ -14,8 +14,11 @@ import (
 
 var (
 	RequestRE        = regexp.MustCompile(`const\s+URI_(\w+)\s*=\s*"([/\w-]+)"`)
+	EnumTypeDefineRE = regexp.MustCompile(`type\s+(\w+)\s*=?\s*(\w+)`)
+	EnumRE           = regexp.MustCompile(`const\s*\(([^)]*)\)`)
+	EnumUnitRE       = regexp.MustCompile(`\s*(\w+)\s+(\w+)\s*=\s*(\w+)\s*`)
 	StructureRE      = regexp.MustCompile(`type\s+(\w+)\s+struct\s*{([^}]*)}`)
-	StructureFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)".*`)
+	StructureFieldRE = regexp.MustCompile(`\w+\s+([\[\]\w]+)\s+.*json:"(\w+)"`)
 )
 
 func ParseGoFiles() {
@@ -54,6 +57,7 @@ func parseFile(filename string) {
 	filename = strings.TrimSuffix(filename, ".go")
 
 	matchRequests(filename, fileBytes)
+	matchEnums(filename, fileBytes)
 	matchStructures(filename, fileBytes)
 }
 
@@ -72,6 +76,66 @@ func matchRequests(filename string, fileBytes []byte) {
 	}
 }
 
+func matchEnums(filename string, fileBytes []byte) {
+	matchEnumTypeDefines(filename, fileBytes)
+
+	matchEnum(fileBytes)
+}
+
+func matchEnumTypeDefines(filename string, fileBytes []byte) {
+	EnumTypeDefineREMatched := EnumTypeDefineRE.FindAllSubmatch(fileBytes, -1)
+	for i := range EnumTypeDefineREMatched {
+		if len(EnumTypeDefineREMatched[i]) < 3 || string(EnumTypeDefineREMatched[i][2]) == "struct" {
+			continue
+		}
+
+		enumName := string(EnumTypeDefineREMatched[i][1])
+		data.GeneratorIns.EnumAffiliation[filename] = append(data.GeneratorIns.EnumAffiliation[filename], enumName)
+		data.GeneratorIns.TypeFrom[enumName] = filename
+
+		//data.GeneratorIns.TsType[enumName] = enumName
+		data.GeneratorIns.TsZeroValue[enumName] = "0"
+	}
+}
+
+func matchEnum(fileBytes []byte) {
+	enumREMatched := EnumRE.FindAllSubmatch(fileBytes, -1)
+	for i := range enumREMatched {
+		if len(enumREMatched[i]) < 2 {
+			continue
+		}
+
+		matchEnumUnits(enumREMatched[i][1])
+	}
+}
+
+func matchEnumUnits(fileBytes []byte) {
+	enumUnitREMatched := EnumUnitRE.FindAllSubmatch(fileBytes, -1)
+	for i := range enumUnitREMatched {
+		if len(enumUnitREMatched[i]) < 4 {
+			continue
+		}
+
+		enumName := string(enumUnitREMatched[i][2])
+		enumUnitName := string(enumUnitREMatched[i][1])
+		if !strings.HasPrefix(enumUnitName, enumName+"_") {
+			continue
+		}
+
+		enumItemIns, ok := data.GeneratorIns.Enums[enumName]
+		if !ok {
+			enumItemIns = &data.EnumItem{Units: make([]*data.EnumUnit, 0)}
+		}
+
+		enumItemIns.Units = append(enumItemIns.Units, &data.EnumUnit{
+			Name:  enumUnitName,
+			Value: string(enumUnitREMatched[i][3]),
+		})
+
+		data.GeneratorIns.Enums[enumName] = enumItemIns
+	}
+}
+
 func matchStructures(filename string, fileBytes []byte) {
 	structureREMatched := StructureRE.FindAllSubmatch(fileBytes, -1)
 	for i := range structureREMatched {
@@ -83,7 +147,7 @@ func matchStructures(filename string, fileBytes []byte) {
 		if !strings.HasSuffix(structureName, data.GeneratorIns.Config.RequestStructureSuffix) &&
 			!strings.HasSuffix(structureName, data.GeneratorIns.Config.ResponseStructureSuffix) {
 			// self-define struct, record it's from
-			data.GeneratorIns.StructureFrom[structureName] = filename
+			data.GeneratorIns.TypeFrom[structureName] = filename
 		}
 
 		data.GeneratorIns.StructureAffiliation[filename] = append(data.GeneratorIns.StructureAffiliation[filename], structureName)
@@ -93,10 +157,10 @@ func matchStructures(filename string, fileBytes []byte) {
 	}
 }
 
-func matchStructureFields(field []byte) []*data.StructureField {
+func matchStructureFields(fields []byte) []*data.StructureField {
 	res := make([]*data.StructureField, 0)
 
-	structureFieldREMatched := StructureFieldRE.FindAllSubmatch(field, -1)
+	structureFieldREMatched := StructureFieldRE.FindAllSubmatch(fields, -1)
 	for i := range structureFieldREMatched {
 		if len(structureFieldREMatched[i]) < 3 {
 			continue

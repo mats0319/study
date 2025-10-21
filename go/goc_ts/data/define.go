@@ -4,11 +4,14 @@ type Generator struct {
 	Config *Config
 	Utils  *Utils
 
-	RequestAffiliation   map[string][]string       // filename - request name(s)
-	Requests             map[string]string         // request name - request uri
-	StructureAffiliation map[string][]string       // filename - structure name(s)
-	Structures           map[string]*StructureItem // structure name - structure item
-	StructureFrom        map[string]string         // (self-define) structure name - from filename
+	RequestAffiliation   map[string][]string // filename - request name(s)
+	StructureAffiliation map[string][]string // filename - structure name(s)
+	EnumAffiliation      map[string][]string // filename - enum name(s)
+
+	Requests   map[string]string         // request name - request uri
+	Structures map[string]*StructureItem // structure name - structure item
+	Enums      map[string]*EnumItem      // enum name - enum item
+	TypeFrom   map[string]string         // (self-define) structure name / enum name - from filename
 
 	TsType      map[string]string // go type - ts type
 	TsZeroValue map[string]string // ts type - ts zero value
@@ -18,10 +21,12 @@ var GeneratorIns = &Generator{
 	Config:               &Config{},
 	Utils:                &Utils{},
 	RequestAffiliation:   make(map[string][]string),
-	Requests:             make(map[string]string),
 	StructureAffiliation: make(map[string][]string),
+	EnumAffiliation:      make(map[string][]string),
+	Requests:             make(map[string]string),
 	Structures:           make(map[string]*StructureItem),
-	StructureFrom:        make(map[string]string),
+	Enums:                make(map[string]*EnumItem),
+	TypeFrom:             make(map[string]string),
 	TsType:               make(map[string]string),
 	TsZeroValue:          make(map[string]string),
 }
@@ -62,6 +67,15 @@ type StructureField struct {
 	IsArray     bool
 	TSType      string
 	TSZeroValue string
+}
+
+type EnumItem struct {
+	Units []*EnumUnit
+}
+
+type EnumUnit struct {
+	Name  string // enum unit name
+	Value string // enum unit value (go and ts)
 }
 
 var DefaultGeneratorConfig = &Config{
