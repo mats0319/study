@@ -8,13 +8,19 @@ type Initializer struct {
 var InitializerIns = &Initializer{}
 
 type GoAPIFile struct {
-	FileName string     `json:"file_name"`
-	APIList  []*APIItem `json:"api_list"`
+	FileName string      `json:"file_name"`
+	APIList  []*APIItem  `json:"api_list"`
+	EnumList []*EnumItem `json:"enum_list"`
 }
 
 type APIItem struct {
 	Name string `json:"name"`
 	URI  string `json:"uri"`
+}
+
+type EnumItem struct {
+	Name   string `json:"name"`
+	Number int    `json:"number"`
 }
 
 var DefaultInitializer = &Initializer{
@@ -30,6 +36,12 @@ var DefaultInitializer = &Initializer{
 				{
 					Name: "CreateUser",
 					URI:  "/user/create",
+				},
+			},
+			EnumList: []*EnumItem{
+				{
+					Name:   "UserIdentify",
+					Number: 3,
 				},
 			},
 		},

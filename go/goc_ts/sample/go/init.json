@@ -12,6 +12,12 @@
           "name": "CreateUser",
           "uri": "/user/create"
         }
+      ],
+      "enum_list": [
+        {
+          "name": "UserIdentify",
+          "number": 3
+        }
       ]
     }
   ]

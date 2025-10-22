@@ -3,8 +3,8 @@ package generate_ts
 import (
 	"strings"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 func GenerateStructureFiles() {
@@ -16,6 +16,7 @@ func GenerateStructureFiles() {
 		for _, structureName := range data.GeneratorIns.StructureAffiliation[filename] {
 			structuresStr += serializeStructure(structureName, externalStructures)
 		}
+		structuresStr = strings.ReplaceAll(structuresStr, "{{ $indentation }}", data.GeneratorIns.IndentationStr)
 		delete(externalStructures, filename) // not import from current file
 
 		importStructuresStr := serializeStructuresImport(externalStructures)
@@ -23,13 +24,7 @@ func GenerateStructureFiles() {
 			content = append(content, '\n')
 		}
 
-		enumsStr := ""
-		for _, enumName := range data.GeneratorIns.EnumAffiliation[filename] {
-			enumsStr += serializeEnum(enumName)
-		}
-
 		content = append(content, importStructuresStr...)
-		content = append(content, enumsStr...)
 		content = append(content, structuresStr...)
 
 		absolutePath := data.GeneratorIns.Config.TsDir + filename + data.GeneratorIns.Config.StructureFileSuffix
@@ -40,54 +35,50 @@ func GenerateStructureFiles() {
 func serializeStructure(structureName string, externalStructures map[string][]string) string {
 	structureItemIns, _ := data.GeneratorIns.Structures[structureName]
 
-	const template = "{{ $indentation }}{{ $fieldName }}: {{ $fieldType_Ts }} = {{ $fieldZeroValue_Ts }};\n"
+	structureStr := ""
+	if structureItemIns.Typ.IsStruct {
+		structureStr = serializeStruct(structureName, structureItemIns, externalStructures)
+	} else {
+		structureStr = serializeEnum(structureName, structureItemIns)
+	}
 
+	return structureStr
+}
+
+func serializeStruct(structureName string, structureItemIns *data.StructureItem, externalStructures map[string][]string) string {
 	fieldsStr := ""
-	for _, structureFieldIns := range structureItemIns.Fields {
-		field := template
-		field = strings.ReplaceAll(field, "{{ $fieldName }}", structureFieldIns.Name)
-		field = strings.ReplaceAll(field, "{{ $fieldType_Ts }}", structureFieldIns.TSType)
-		field = strings.ReplaceAll(field, "{{ $fieldZeroValue_Ts }}", structureFieldIns.TSZeroValue)
+	for _, fieldIns := range structureItemIns.Fields {
+		field := "{{ $indentation }}{{ $fieldName }}: {{ $fieldType_Ts }} = {{ $fieldZeroValue_Ts }};\n"
+		field = strings.ReplaceAll(field, "{{ $fieldName }}", fieldIns.Name)
+		field = strings.ReplaceAll(field, "{{ $fieldType_Ts }}", fieldIns.TSType)
+		field = strings.ReplaceAll(field, "{{ $fieldZeroValue_Ts }}", fieldIns.TSZeroValue)
 
 		fieldsStr += field
 
-		// find self-define type, record it
-		if _, ok := data.GeneratorIns.TsType[structureFieldIns.GoType]; !ok {
-			fromFile, _ := data.GeneratorIns.TypeFrom[structureFieldIns.GoType]
-			externalStructures[fromFile] = append(externalStructures[fromFile], structureFieldIns.TSType)
+		if _, ok := data.GeneratorIns.Structures[fieldIns.GoType]; ok {
+			fromFile, _ := data.GeneratorIns.StructureFrom[fieldIns.GoType]
+			externalStructures[fromFile] = append(externalStructures[fromFile], fieldIns.TSType)
 		}
 	}
-	fieldsStr = strings.ReplaceAll(fieldsStr, "{{ $indentation }}", string(data.GetIndentation()))
 
-	classStr := "\n" +
-		"export class {{ $structureName }} {\n" +
-		"{{ $structureFields }}" +
-		"}\n"
-	classStr = strings.ReplaceAll(classStr, "{{ $structureName }}", structureName)
-	classStr = strings.ReplaceAll(classStr, "{{ $structureFields }}", fieldsStr)
+	structStr := "\nexport class {{ $structureName }} {\n{{ $structureFields }}}\n"
+	structStr = strings.ReplaceAll(structStr, "{{ $structureName }}", structureName)
+	structStr = strings.ReplaceAll(structStr, "{{ $structureFields }}", fieldsStr)
 
-	return classStr
+	return structStr
 }
 
-func serializeEnum(enumName string) string {
-	enumItemIns, _ := data.GeneratorIns.Enums[enumName]
-
-	const template = "{{ $indentation }}{{ $enumName }} = {{ $enumZeroValue_Ts }},\n"
-
+func serializeEnum(enumName string, enumItemIns *data.StructureItem) string {
 	enumUnitsStr := ""
-	for _, enumUnitIns := range enumItemIns.Units {
-		unit := template
+	for _, enumUnitIns := range enumItemIns.Fields {
+		unit := "{{ $indentation }}{{ $enumName }} = {{ $enumZeroValue_Ts }},\n"
 		unit = strings.ReplaceAll(unit, "{{ $enumName }}", enumUnitIns.Name)
-		unit = strings.ReplaceAll(unit, "{{ $enumZeroValue_Ts }}", enumUnitIns.Value)
+		unit = strings.ReplaceAll(unit, "{{ $enumZeroValue_Ts }}", enumUnitIns.TSZeroValue)
 
 		enumUnitsStr += unit
 	}
-	enumUnitsStr = strings.ReplaceAll(enumUnitsStr, "{{ $indentation }}", string(data.GetIndentation()))
 
-	enumStr := "\n" +
-		"export enum {{ $enumName }} {\n" +
-		"{{ $enumUnits }}" +
-		"}\n"
+	enumStr := "\nexport enum {{ $enumName }} {\n{{ $enumUnits }}}\n"
 	enumStr = strings.ReplaceAll(enumStr, "{{ $enumName }}", enumName)
 	enumStr = strings.ReplaceAll(enumStr, "{{ $enumUnits }}", enumUnitsStr)
 
@@ -100,13 +91,11 @@ func serializeStructuresImport(externalStructures map[string][]string) string {
 		return ""
 	}
 
-	const template = `import { {{ $structures }} } from "./{{ $filename }}{{ $structureFileSuffix }}"` + "\n"
-
 	importStructuresStr := ""
-	for key, value := range externalStructures {
-		str := template
-		str = strings.ReplaceAll(str, "{{ $structures }}", utils.FormatStrSliceInLine(value))
-		str = strings.ReplaceAll(str, "{{ $filename }}", key)
+	for fromFile, structureNames := range externalStructures {
+		str := "import { {{ $structures }} } from \"./{{ $filename }}{{ $structureFileSuffix }}\"\n"
+		str = strings.ReplaceAll(str, "{{ $structures }}", utils.FormatStrSliceInLine(structureNames))
+		str = strings.ReplaceAll(str, "{{ $filename }}", fromFile)
 
 		importStructuresStr += str
 	}

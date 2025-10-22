@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mats9693/study/go/goc_ts/parse"
+	"github.com/mats9693/study/go/goc-ts/parse"
 )
 
 // 正则匹配结果的结构：

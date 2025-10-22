@@ -3,8 +3,8 @@ package parse
 import (
 	"strings"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 func ParseUtils() {
@@ -31,7 +31,7 @@ ALL:
 
 func funcCodeIndentation(funcCode string) string {
 	res := funcCode
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
+	res = strings.ReplaceAll(res, "{{ $indentation }}", data.GeneratorIns.IndentationStr)
 
 	return res
 }

@@ -1,7 +1,7 @@
 // Generate File, Should Not Edit.
 // Author : mario. github.com/mats0319
 // Code   : github.com/mats0319/study/go/goc_ts
-// Version: goc_ts v0.4.0
+// Version: goc_ts v1.0.0
 
 import { axiosWrapper } from "./config"
 import { AxiosResponse } from "axios"

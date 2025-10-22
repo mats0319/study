@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
-func Initialize(configFile string) {
+func (ins *Generator) Initialize(configFile string) {
 	fileBytes, err := os.ReadFile(configFile)
 
 	configIns := &Config{}
@@ -21,23 +21,22 @@ func Initialize(configFile string) {
 	}
 
 	configIns.mustValid()
-	GeneratorIns.Config = configIns
+	ins.Config = configIns
 
 	// set type maps
-	for _, typ := range configIns.BasicGoType {
-		for _, goTyp := range typ.GoType {
-			GeneratorIns.TsType[goTyp] = typ.TsType
+	for _, typIns := range configIns.BasicGoType {
+		for _, goTyp := range typIns.GoType {
+			ins.TsType[goTyp] = typIns.TsType
 		}
-		GeneratorIns.TsZeroValue[typ.TsType] = typ.TsZeroValue
+		ins.TsZeroValue[typIns.TsType] = typIns.TsZeroValue
 	}
-}
 
-func GetIndentation() []byte {
-	res := make([]byte, 0, GeneratorIns.Config.Indentation)
-	for i := 0; i < GeneratorIns.Config.Indentation; i++ {
-		res = append(res, ' ')
+	// set indentation
+	indentationBytes := make([]byte, 0, ins.Config.Indentation)
+	for i := 0; i < ins.Config.Indentation; i++ {
+		indentationBytes = append(indentationBytes, ' ')
 	}
-	return res
+	ins.IndentationStr = string(indentationBytes)
 }
 
 // make sure all configs are valid, use default config cover empty ones
@@ -53,6 +52,7 @@ func (c *Config) mustValid() {
 		c.TsDir = utils.MustSuffix(c.TsDir, "/")
 	}
 	utils.MustExistDir(c.GoDir)
+	utils.MustExistDir(c.GoDir + "backup/")
 	utils.EmptyDir(c.TsDir)
 
 	if len(c.BaseURL) < 1 {

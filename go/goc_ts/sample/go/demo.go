@@ -1,14 +1,14 @@
 package api
 
-const URI_ListUser = "/user/list"
-
 type UserIdentify int8
 
 const (
-	UserIdentify_Administrator UserIdentify = 0
-	UserIdentify_VIP           UserIdentify = 1
-	UserIdentify_Visitor       UserIdentify = 2
+	UserIdentify_Value0 UserIdentify = 0
+	UserIdentify_Value1 UserIdentify = 1
+	UserIdentify_Value2 UserIdentify = 2
 )
+
+const URI_ListUser = "/user/list"
 
 type Pagination struct {
 	PageNum  int `json:"page_num"`

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 func GenerateRequestFiles() {
@@ -19,7 +19,7 @@ func GenerateRequestFiles() {
 }
 
 func serializeRequestFile(filename string) string {
-	res := `
+	reqFileStr := `
 import { axiosWrapper } from "./config"
 import { AxiosResponse } from "axios"
 {{ $structures }}{{ $externalFuncs }}
@@ -31,14 +31,14 @@ export const {{ $filename }}Axios: {{ $filenameBig }}Axios = new {{ $filenameBig
 
 	structuresStr, externalFuncs, requestStr := prepareData(filename)
 
-	res = strings.ReplaceAll(res, "{{ $structures }}", structuresStr)
-	res = strings.ReplaceAll(res, "{{ $filename }}", filename)
-	res = strings.ReplaceAll(res, "{{ $externalFuncs }}", externalFuncs)
-	res = strings.ReplaceAll(res, "{{ $filenameBig }}", utils.MustBig(filename))
-	res = strings.ReplaceAll(res, "{{ $requests }}", requestStr)
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $structures }}", structuresStr)
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $filename }}", filename)
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $externalFuncs }}", externalFuncs)
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $filenameBig }}", utils.MustBig(filename))
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $requests }}", requestStr)
+	reqFileStr = strings.ReplaceAll(reqFileStr, "{{ $indentation }}", data.GeneratorIns.IndentationStr)
 
-	return res
+	return reqFileStr
 }
 
 // prepareData prepare 'structures' / 'import functions' / 'http request invokes' of service code
@@ -70,7 +70,7 @@ func prepareData(filename string) (string, string, string) {
 
 			for _, structureField := range structureItemIns.Fields {
 				if _, ok := data.GeneratorIns.TsType[structureField.GoType]; !ok {
-					fromFile, _ := data.GeneratorIns.TypeFrom[structureField.GoType]
+					fromFile, _ := data.GeneratorIns.StructureFrom[structureField.GoType]
 					externalStructures[fromFile] = append(externalStructures[fromFile], structureField.TSType)
 				}
 			}
@@ -102,15 +102,16 @@ func serializeExternalFunctionsImport(functions map[string]struct{}) string {
 
 // serializeOneHttpRequestInvoke serialize a http request invoke
 func serializeOneHttpRequestInvoke(requestName string, structureItemIns *data.StructureItem) string {
-	res := "\n{{ $indentation }}public {{ $requestNameSmall }}({{ $functionInputs }}): " +
-		"Promise<AxiosResponse<{{ $requestName }}{{ $responseStructureSuffix }}>> {{{ $requestInputs }}\n" +
-		"{{ $indentation }}{{ $indentation }}return axiosWrapper.post(\"{{ $requestURI }}\"{{ $invokeInputs }})\n" +
-		"{{ $indentation }}}\n"
+	httpReqInvokeStr := `
+{{ $indentation }}public {{ $requestNameSmall }}({{ $functionInputs }}): Promise<AxiosResponse<{{ $requestName }}{{ $responseStructureSuffix }}>> {{{ $requestInputs }}
+{{ $indentation }}{{ $indentation }}return axiosWrapper.post("{{ $requestURI }}"{{ $invokeInputs }})
+{{ $indentation }}}
+`
 
-	res = strings.ReplaceAll(res, "{{ $requestNameSmall }}", utils.MustSmall(requestName))
-	res = strings.ReplaceAll(res, "{{ $requestName }}", requestName)
-	res = strings.ReplaceAll(res, "{{ $responseStructureSuffix }}", data.GeneratorIns.Config.ResponseStructureSuffix)
-	res = strings.ReplaceAll(res, "{{ $requestURI }}", data.GeneratorIns.Requests[requestName])
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $requestNameSmall }}", utils.MustSmall(requestName))
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $requestName }}", requestName)
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $responseStructureSuffix }}", data.GeneratorIns.Config.ResponseStructureSuffix)
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $requestURI }}", data.GeneratorIns.Requests[requestName])
 
 	var (
 		functionInputs string
@@ -131,24 +132,29 @@ func serializeOneHttpRequestInvoke(requestName string, structureItemIns *data.St
 		invokeInputs = ", " + utils.FunctionName_ObjectToFormData + "(req)"
 	}
 
-	res = strings.ReplaceAll(res, "{{ $functionInputs }}", functionInputs)
-	res = strings.ReplaceAll(res, "{{ $requestInputs }}", requestInputs)
-	res = strings.ReplaceAll(res, "{{ $invokeInputs }}", invokeInputs)
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $functionInputs }}", functionInputs)
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $requestInputs }}", requestInputs)
+	httpReqInvokeStr = strings.ReplaceAll(httpReqInvokeStr, "{{ $invokeInputs }}", invokeInputs)
 
-	return res
+	return httpReqInvokeStr
 }
 
 func serializeOneHttpRequestInput(requestName string, requestInputs []string) string {
-	res := "\n{{ $indentation }}{{ $indentation }}let req: {{ $requestName }}{{ $requestMessageSuffix }} = {\n"
-
+	fieldStr := ""
 	for i := range requestInputs {
-		res = res + "{{ $indentation }}{{ $indentation }}{{ $indentation }}" + requestInputs[i]
+		field := "{{ $indentation }}{{ $indentation }}{{ $indentation }}{{ $requestInput }}"
+		field = strings.ReplaceAll(field, "{{ $requestInput }}", requestInputs[i])
+
+		fieldStr += field
 	}
 
-	res += "{{ $indentation }}{{ $indentation }}}\n"
+	httpReqInputStr := `
+{{ $indentation }}{{ $indentation }}let req: {{ $requestName }}{{ $requestMessageSuffix }} = {
+{{ $requestFields }}{{ $indentation }}{{ $indentation }}}
+`
+	httpReqInputStr = strings.ReplaceAll(httpReqInputStr, "{{ $requestFields }}", fieldStr)
+	httpReqInputStr = strings.ReplaceAll(httpReqInputStr, "{{ $requestName }}", requestName)
+	httpReqInputStr = strings.ReplaceAll(httpReqInputStr, "{{ $requestMessageSuffix }}", data.GeneratorIns.Config.RequestStructureSuffix)
 
-	res = strings.ReplaceAll(res, "{{ $requestName }}", requestName)
-	res = strings.ReplaceAll(res, "{{ $requestMessageSuffix }}", data.GeneratorIns.Config.RequestStructureSuffix)
-
-	return res
+	return httpReqInputStr
 }

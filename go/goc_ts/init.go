@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/initialize"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/initialize"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 var (
@@ -42,7 +42,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	data.Initialize(configFile)
+	data.GeneratorIns.Initialize(configFile)
 
 	if initializeFlag {
 		initialize.OnInitialize()
