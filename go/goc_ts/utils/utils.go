@@ -25,7 +25,7 @@ func WriteFile(filename string, content []byte) {
 	log.Println("Generated file: ", filename)
 }
 
-// FormatStrSliceInLine e.g. ["a","b","c"] => "a, b, c"
+// e.g. ["a","b","c"] => "a, b, c"
 func FormatStrSliceInLine(data []string) string {
 	if len(data) < 1 {
 		return ""
@@ -39,7 +39,7 @@ func FormatStrSliceInLine(data []string) string {
 	return string(resBytes[2:])
 }
 
-// MustSmall make sure first char of 'str' is small-case, e.g. "MustSmall" => "mustSmall"
+// make sure first char of 'str' is small-case, e.g. "MustSmall" => "mustSmall"
 func MustSmall(str string) string {
 	if len(str) > 0 && 'A' < str[0] && str[0] < 'Z' {
 		str = string(str[0]-'A'+'a') + str[1:]
@@ -48,7 +48,7 @@ func MustSmall(str string) string {
 	return str
 }
 
-// MustBig make sure first char of 'str' is big-case, e.g. "mustBig" => "MustBig"
+// make sure first char of 'str' is big-case, e.g. "mustBig" => "MustBig"
 func MustBig(str string) string {
 	if len(str) > 0 && 'a' < str[0] && str[0] < 'z' {
 		str = string(str[0]-'a'+'A') + str[1:]
@@ -64,7 +64,7 @@ func MustExistDir(dir string) {
 	}
 }
 
-// EmptyDir del and re-make dir
+// del and re-make dir
 func EmptyDir(dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
@@ -74,7 +74,7 @@ func EmptyDir(dir string) {
 	MustExistDir(dir)
 }
 
-// MustSuffix make sure 'str' is end with 'suffix'
+// make sure 'str' is end with 'suffix'
 func MustSuffix(str string, suffix string) string {
 	if !strings.HasSuffix(str, suffix) {
 		str += suffix

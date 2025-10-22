@@ -1,8 +1,8 @@
 package generate_ts
 
 import (
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 func GenerateUtils() {

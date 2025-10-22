@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 func GenerateConfig() {
@@ -24,7 +24,7 @@ export const axiosWrapper: AxiosInstance = axios.create({
 {{ $indentation }}timeout: {{ $timeout }},
 });
 `
-	res = strings.ReplaceAll(res, "{{ $indentation }}", string(data.GetIndentation()))
+	res = strings.ReplaceAll(res, "{{ $indentation }}", data.GeneratorIns.IndentationStr)
 	res = strings.ReplaceAll(res, "{{ $baseURL }}", data.GeneratorIns.Config.BaseURL)
 	res = strings.ReplaceAll(res, "{{ $timeout }}", strconv.Itoa(data.GeneratorIns.Config.Timeout))
 

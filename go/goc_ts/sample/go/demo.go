@@ -1,5 +1,13 @@
 package api
 
+type UserIdentify int8
+
+const (
+	UserIdentify_Value0 UserIdentify = 0
+	UserIdentify_Value1 UserIdentify = 1
+	UserIdentify_Value2 UserIdentify = 2
+)
+
 const URI_ListUser = "/user/list"
 
 type Pagination struct {
@@ -8,8 +16,9 @@ type Pagination struct {
 }
 
 type ListUserReq struct {
-	Operator string     `json:"operator"`
-	Page     Pagination `json:"page"`
+	Operator     string       `json:"operator"`
+	ListIdentify UserIdentify `json:"list_identify"`
+	Page         Pagination   `json:"page"`
 }
 
 type ListUserRes struct {

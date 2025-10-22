@@ -4,24 +4,27 @@ type Generator struct {
 	Config *Config
 	Utils  *Utils
 
-	RequestAffiliation   map[string][]string       // filename - request name(s)
-	Requests             map[string]string         // request name - request uri
-	StructureAffiliation map[string][]string       // filename - structure name(s)
-	Structures           map[string]*StructureItem // structure name - structure item
-	StructureFrom        map[string]string         // (self-define) structure name - from filename
+	RequestAffiliation   map[string][]string // filename - request name(s)
+	StructureAffiliation map[string][]string // filename - structure name(s)
+	StructureFrom        map[string]string   // structure name - from filename
+
+	Requests   map[string]string         // request name - request uri
+	Structures map[string]*StructureItem // structure name - structure item
 
 	TsType      map[string]string // go type - ts type
 	TsZeroValue map[string]string // ts type - ts zero value
+
+	IndentationStr string // indentation str
 }
 
 var GeneratorIns = &Generator{
 	Config:               &Config{},
 	Utils:                &Utils{},
 	RequestAffiliation:   make(map[string][]string),
-	Requests:             make(map[string]string),
 	StructureAffiliation: make(map[string][]string),
-	Structures:           make(map[string]*StructureItem),
 	StructureFrom:        make(map[string]string),
+	Requests:             make(map[string]string),
+	Structures:           make(map[string]*StructureItem),
 	TsType:               make(map[string]string),
 	TsZeroValue:          make(map[string]string),
 }
@@ -53,13 +56,20 @@ type Utils struct {
 }
 
 type StructureItem struct {
+	Typ    *StructureType
 	Fields []*StructureField
 }
 
+type StructureType struct {
+	IsStruct bool
+	IsEnum   bool
+}
+
 type StructureField struct {
-	Name        string // field name, from json tag of go struct field
-	GoType      string
-	IsArray     bool
+	Name    string // field name, from json tag of go struct field
+	GoType  string
+	IsArray bool
+
 	TSType      string
 	TSZeroValue string
 }

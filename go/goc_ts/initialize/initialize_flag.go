@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/mats9693/study/go/goc_ts/data"
-	"github.com/mats9693/study/go/goc_ts/utils"
+	"github.com/mats9693/study/go/goc-ts/data"
+	"github.com/mats9693/study/go/goc-ts/utils"
 )
 
 // OnInitialize 实现-i参数：写默认配置文件和go接口文件示例文件(demo)
