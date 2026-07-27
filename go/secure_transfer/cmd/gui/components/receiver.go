@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mats0319/secure_transfer/internal"
@@ -45,8 +44,9 @@ func makeReceiverContent() *fyne.Container {
 		Log("Decrypt Message " + boolToString(isSuccess) + ".")
 	})
 
-	blank40 := canvas.NewRectangle(color_MainDark)
-	blank40.SetMinSize(fyne.NewSquareSize(40))
+	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)
 
-	return container.NewVBox(titleText, blank40, generateKeyPairButton, blank40, decryptCheckText, decryptButton)
+	content := container.NewVBox(generateKeyPairButton, blank(40), decryptCheckText, decryptButton)
+
+	return container.NewBorder(titleWrapper, nil, blank(60), blank(60), content)
 }

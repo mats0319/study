@@ -33,6 +33,7 @@
 - https://github.blog/security/6-security-settings-every-github-maintainer-should-enable-this-week/ ：
   github建议你开启的6项仓库安全设置
 - https://github.com/EvanLi/Github-Ranking/blob/master/Top100/Go.md，github ：go相关、star最多的100个库，每天更新
+- https://blog.jetbrains.com/go/2026/07/20/escape-analysis/ ，介绍go语言逃逸分析，以及goland 2026.2如何帮助进行逃逸分析
 
 ## 代码/工具
 

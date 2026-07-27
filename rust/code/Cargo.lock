@@ -97,6 +97,7 @@ dependencies = [
 name = "code"
 version = "0.1.0"
 dependencies = [
+ "futures",
  "rand 0.10.2",
  "regex",
  "trpl",

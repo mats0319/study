@@ -48,8 +48,16 @@ func makeSenderContent() *fyne.Container {
 		Log("Encrypt Message " + boolToString(isSuccess) + ".")
 	})
 
-	blank40 := canvas.NewRectangle(color_MainDark)
-	blank40.SetMinSize(fyne.NewSquareSize(40))
+	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)
 
-	return container.NewVBox(titleText, blank40, initializeFileButton, blank40, encryptCheckText, encryptButton)
+	content := container.NewVBox(initializeFileButton, blank(40), encryptCheckText, encryptButton)
+
+	return container.NewBorder(titleWrapper, nil, blank(60), blank(60), content)
+}
+
+func blank(number float32) *canvas.Rectangle {
+	res := canvas.NewRectangle(color_MainDark)
+	res.SetMinSize(fyne.NewSquareSize(number))
+
+	return res
 }
