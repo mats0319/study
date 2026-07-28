@@ -21,6 +21,13 @@ go get fyne.io/fyne/v2@latest
 go install fyne.io/tools/cmd/fyne@latest
 ```
 
+### GUI
+
+因为fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则可执行程序无法使用，
+因此放弃提供gui的二进制文件，仅在本小节附图
+
+![linux](doc/linux.png)
+
 ## 实现
 
 方案：使用椭圆曲线协商算法得到共享密钥，共享密钥派生得到最终加密密钥，使用对称加密算法加密
