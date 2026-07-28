@@ -80,12 +80,12 @@ func deserializePublicKey() *ecdh.PublicKey {
 }
 
 func encrypt(pubKey *ecdh.PublicKey, content []byte) []byte {
-	pubKeyBytes, aesKey, err := encryptConsultation(pubKey)
+	pubKeyBytes, aesKey, err := deriveKeyInEncrypt(pubKey)
 	if err != nil {
 		return nil
 	}
 
-	ciphertext := encryptContent(aesKey, content)
+	ciphertext := aesEncrypt(aesKey, content)
 
 	result := make([]byte, 1+len(pubKeyBytes)+len(ciphertext))
 	copy(result[:1], []byte{byte(len(pubKeyBytes))})
@@ -95,7 +95,7 @@ func encrypt(pubKey *ecdh.PublicKey, content []byte) []byte {
 	return result
 }
 
-func encryptConsultation(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []byte, err error) {
+func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []byte, err error) {
 	// ecdh
 	tempPrivKey, err := Curve().GenerateKey(nil)
 	if err != nil {
@@ -122,7 +122,7 @@ func encryptConsultation(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []b
 }
 
 // aes-gcm encrypt
-func encryptContent(aesKey []byte, content []byte) []byte {
+func aesEncrypt(aesKey []byte, content []byte) []byte {
 	block, err := aes.NewCipher(aesKey)
 	if err != nil {
 		Error("Build cipher block", err)

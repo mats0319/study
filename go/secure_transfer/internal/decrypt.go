@@ -81,12 +81,12 @@ func deserializePrivateKey() *ecdh.PrivateKey {
 }
 
 func decrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) []byte {
-	aesKey, ciphertext, err := decryptConsultation(privKey, pubKeyFileBytes)
+	aesKey, ciphertext, err := deriveKeyInDecrypt(privKey, pubKeyFileBytes)
 	if err != nil {
 		return nil
 	}
 
-	message, err := decryptContent(aesKey, ciphertext)
+	message, err := aesDecrypt(aesKey, ciphertext)
 	if err != nil {
 		return nil
 	}
@@ -94,7 +94,7 @@ func decrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) []byte {
 	return message
 }
 
-func decryptConsultation(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (aesKey []byte, ciphertext []byte, err error) {
+func deriveKeyInDecrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (aesKey []byte, ciphertext []byte, err error) {
 	if len(pubKeyFileBytes) <= 1+publicKeyLength || pubKeyFileBytes[0] != publicKeyLength {
 		err = errors.New(fmt.Sprintf("wrong length, want: %d, get: %d", publicKeyLength, len(pubKeyFileBytes)))
 		Error("Invalid ciphertext", err)
@@ -125,7 +125,7 @@ func decryptConsultation(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (aesK
 	return
 }
 
-func decryptContent(aesKey []byte, ciphertext []byte) (message []byte, err error) {
+func aesDecrypt(aesKey []byte, ciphertext []byte) (message []byte, err error) {
 	block, err := aes.NewCipher(aesKey)
 	if err != nil {
 		Error("Build cipher block", err)
