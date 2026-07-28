@@ -24,9 +24,9 @@ go install fyne.io/tools/cmd/fyne@latest
 ### GUI
 
 因为fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则可执行程序无法使用，
-因此放弃提供gui的二进制文件，仅在本小节附图
+因此放弃提供gui的二进制文件，仅在本小节附使用截图
 
-![linux](doc/linux.png)
+![linux](doc/linux_use.png)
 
 ## 实现
 
