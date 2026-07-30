@@ -16,7 +16,20 @@ func main() {
 	mlog.Initialize()
 	defer mlog.Close()
 
+	workDir()
+
 	start()
+}
+
+func workDir() {
+	path, err := os.Getwd()
+	if err != nil {
+		printResult("Get Current Path", err)
+	}
+	if !strings.HasSuffix(path, "/") { // must dir
+		path += "/"
+	}
+	info("Work Dir: " + path)
 }
 
 func start() {

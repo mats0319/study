@@ -37,12 +37,11 @@ func TestLogSplitFile(t *testing.T) {
 
 	lastSize := handler.Size
 	currentSize := handler.Size
-	logger := DefaultLogger().WithGroup("groupName")
 
 	for lastSize <= currentSize { // exit loop when emit log split
 		lastSize = currentSize
 
-		Log(logger, 100, "this is a long long test log message",
+		Log(nil, 100, "this is a long long test log message",
 			slog.String("key1", "value1"),
 			slog.String("key2", "value2"),
 		)

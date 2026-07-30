@@ -982,5 +982,3 @@ pub struct Screen<T: Draw> {
 - while let
 - for
 - 函数参数
-
-## 高级特性

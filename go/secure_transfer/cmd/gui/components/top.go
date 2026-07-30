@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -18,19 +19,28 @@ func TopBar(a fyne.App) fyne.CanvasObject {
 func topButtons(a fyne.App) *fyne.Container {
 	aboutButton := widget.NewButton("About", func() {
 		window := a.NewWindow("About")
-		window.Resize(fyne.NewSize(600, 400))
-		window.SetContent(widget.NewLabel(aboutText))
+		window.Resize(fyne.NewSize(600, 400)) // 内容较少，设置窗口尺寸避免窗口过小
+		window.SetContent(roundRectangleCard(aboutText))
 		window.Show()
 	})
 
 	helpButton := widget.NewButton("Help", func() {
 		window := a.NewWindow("Help")
-		window.Resize(fyne.NewSize(600, 400))
-		window.SetContent(widget.NewLabel(helpText))
+		window.SetContent(roundRectangleCard(helpText))
 		window.Show()
 	})
 
 	return container.NewHBox(aboutButton, helpButton, container.NewHBox()) // 添加占位符，避免按钮占满行
+}
+
+func roundRectangleCard(text string) *fyne.Container {
+	rectangle := canvas.NewRectangle(color_MainLight)
+	rectangle.CornerRadius = 20
+
+	content := container.NewCenter(widget.NewLabel(text))
+	rectangleStack := container.NewStack(rectangle, content)
+
+	return container.NewPadded(rectangleStack)
 }
 
 func workDir(a fyne.App) *fyne.Container {
