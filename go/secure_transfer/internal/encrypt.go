@@ -12,94 +12,106 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/mats0319/secure_transfer/utils"
+	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
-func Encrypt() (isSuccess bool) {
-	pubKey := deserializePublicKey()
-	if pubKey == nil {
-		return
+func Encrypt() error {
+	pubKey, e := deserializePublicKey()
+	if e != nil {
+		return e
 	}
 
-	fileName, fileBytes := GetFirstFile(plainTextFileName)
-	if len(fileBytes) < 1 {
-		return
+	filePath, fileBytes, e := utils.GetFirstFile(plainTextFileName)
+	if e != nil {
+		return e
 	}
 
-	encryptedBytes := encrypt(pubKey, fileBytes)
-	if encryptedBytes == nil {
-		return
+	encryptedBytes, e := encrypt(pubKey, fileBytes)
+	if e != nil {
+		return e
 	}
 
-	extension := strings.ToUpper(GetExtension(fileName, plainTextFileName))
-	err := os.WriteFile(fmt.Sprintf("./%s%s", cipherFileName, extension), encryptedBytes, 0777)
+	extension := strings.ToUpper(utils.GetExtension(filePath, plainTextFileName))
+	fileName := fmt.Sprintf("./%s%s", cipherFileName, extension)
+	err := os.WriteFile(fileName, encryptedBytes, 0777)
 	if err != nil {
-		Error("Write cipher file", err)
-		return
+		e = utils.ErrSaveCiphertext().WithCause(err)
+		mlog.Error(e.String())
+		return e
 	}
 
-	Success("Encrypt")
-
-	return true
+	return nil
 }
 
-func deserializePublicKey() *ecdh.PublicKey {
+func deserializePublicKey() (pubKey *ecdh.PublicKey, e *utils.Error) {
 	pubKeyBytes, err := os.ReadFile(publicKeyFilePath)
 	if err != nil {
-		Error("Read public key", err)
-		return nil
+		e = utils.ErrReadPublicKey().WithCause(err)
+		mlog.Error(e.String())
+		return
 	}
 
 	block, _ := pem.Decode(pubKeyBytes)
 	if block == nil {
-		Error("Decode public key", nil)
-		return nil
+		e = utils.ErrDecodePublicKey()
+		mlog.Error(e.String())
+		return
 	}
 
 	pubKeyI, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		Error("Parse public key", err)
-		return nil
+		e = utils.ErrParsePublicKey().WithCause(err)
+		mlog.Error(e.String())
+		return
 	}
 
 	pubKey, ok := pubKeyI.(*ecdh.PublicKey)
 	if !ok {
 		ecdsaPubKey, ok := pubKeyI.(*ecdsa.PublicKey) // x509 parser usually return this type
 		if !ok {
-			Error("Public key type assert", nil)
-			return nil
+			e = utils.ErrInvalidPublicKey()
+			mlog.Error(e.String())
+			return
 		}
 
 		pubKey, err = ecdsaPubKey.ECDH()
 		if err != nil {
-			Error("ECDSA public key to ecdh", err)
-			return nil
+			e = utils.ErrInvalidPublicKey().WithCause(err)
+			mlog.Error(e.String())
+			return
 		}
 	}
 
-	return pubKey
+	return
 }
 
-func encrypt(pubKey *ecdh.PublicKey, content []byte) []byte {
-	pubKeyBytes, aesKey, err := deriveKeyInEncrypt(pubKey)
-	if err != nil {
-		return nil
+func encrypt(pubKey *ecdh.PublicKey, content []byte) (encryptedBytes []byte, e *utils.Error) {
+	pubKeyBytes, aesKey, e := deriveKeyInEncrypt(pubKey)
+	if e != nil {
+		return
 	}
 
-	ciphertext := aesEncrypt(aesKey, content)
+	ciphertext, e := aesEncrypt(aesKey, content)
+	if e != nil {
+		return
+	}
 
-	result := make([]byte, 1+len(pubKeyBytes)+len(ciphertext))
-	copy(result[:1], []byte{byte(len(pubKeyBytes))})
-	copy(result[1:1+len(pubKeyBytes)], pubKeyBytes)
-	copy(result[1+len(pubKeyBytes):], ciphertext)
+	encryptedBytes = make([]byte, 1+len(pubKeyBytes)+len(ciphertext))
+	copy(encryptedBytes[:1], []byte{byte(len(pubKeyBytes))})
+	copy(encryptedBytes[1:1+len(pubKeyBytes)], pubKeyBytes)
+	copy(encryptedBytes[1+len(pubKeyBytes):], ciphertext)
 
-	return result
+	return
 }
 
-func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []byte, err error) {
+func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []byte, e *utils.Error) {
 	// ecdh
-	tempPrivKey, err := Curve().GenerateKey(nil)
+	tempPrivKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
-		Error("Generate temp key", err)
+		e = utils.ErrGeneratePrivateKey().WithCause(err)
+		mlog.Error(e.String())
 		return
 	}
 
@@ -107,14 +119,16 @@ func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []by
 
 	sharedKey, err := tempPrivKey.ECDH(pubKey)
 	if err != nil {
-		Error("ECDH", err)
+		e = utils.ErrECDH().WithCause(err)
+		mlog.Error(e.String())
 		return
 	}
 
 	// kdf
 	aesKey, err = hkdf.Key(sha256.New, sharedKey, []byte(salt), info, driveKeyLength)
 	if err != nil {
-		Error("HKDF", err)
+		e = utils.ErrKDF().WithCause(err)
+		mlog.Error(e.String())
 		return
 	}
 
@@ -122,18 +136,22 @@ func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []by
 }
 
 // aes-gcm encrypt
-func aesEncrypt(aesKey []byte, content []byte) []byte {
+func aesEncrypt(aesKey []byte, content []byte) (encryptedBytes []byte, e *utils.Error) {
 	block, err := aes.NewCipher(aesKey)
 	if err != nil {
-		Error("Build cipher block", err)
-		return nil
+		e = utils.ErrAESNewCipher().WithCause(err)
+		mlog.Error(e.String())
+		return
 	}
 
 	aesGCM, err := cipher.NewGCMWithRandomNonce(block)
 	if err != nil {
-		Error("Build GCM", err)
-		return nil
+		e = utils.ErrAESNewGCM().WithCause(err)
+		mlog.Error(e.String())
+		return
 	}
 
-	return aesGCM.Seal(nil, nil, content, nil)
+	encryptedBytes = aesGCM.Seal(nil, nil, content, nil)
+
+	return
 }

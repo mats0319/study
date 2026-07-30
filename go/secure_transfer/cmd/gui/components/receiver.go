@@ -14,8 +14,8 @@ func makeReceiverContent() *fyne.Container {
 	titleText := widget.NewLabel("> Receiver:")
 
 	generateKeyPairButton := widget.NewButton("Generate Key Pair", func() {
-		internal.GenerateKeypair()
-		Log("Generate Key Pair.")
+		err := internal.GenerateKeyPair()
+		printResult("Generate Key Pair.", err)
 	})
 
 	var hasPrivKey, hasMessage bool
@@ -40,8 +40,8 @@ func makeReceiverContent() *fyne.Container {
 			return
 		}
 
-		isSuccess := internal.Decrypt()
-		Log("Decrypt Message " + boolToString(isSuccess) + ".")
+		err := internal.Decrypt()
+		printResult("Decrypt", err)
 	})
 
 	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)

@@ -1,9 +1,18 @@
 package components
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
+
+func printResult(message string, err error) {
+	if err != nil {
+		Log(fmt.Sprintf("%s Failed, %s", message, err.Error()))
+	} else {
+		Log(fmt.Sprintf("%s Success.", message))
+	}
+}
 
 func boolToString(b bool) (res string) {
 	if b {

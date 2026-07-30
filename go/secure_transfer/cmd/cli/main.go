@@ -2,14 +2,20 @@ package main
 
 import (
 	"bufio"
+	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/mats0319/secure_transfer/internal"
+	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
 func main() {
+	mlog.Initialize()
+	defer mlog.Close()
+
 	start()
 }
 
@@ -17,38 +23,42 @@ func start() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 ALL:
-	for {
-		internal.Info("Enter Your Command ('h' for help) .")
+	for { // block
+		info("Enter Your Command ('h' for help) .")
 
 		if !scanner.Scan() {
 			break
 		}
 
-		text := strings.TrimSpace(scanner.Text())
+		text := strings.ToLower(strings.TrimSpace(scanner.Text()))
 		// 匹配第一个字符串，大小写不敏感 (== [0-9A-Za-z_])
-		matched := regexp.MustCompile(`(\w+)`).FindString(strings.ToLower(text))
+		matched := regexp.MustCompile(`(\w+)`).FindString(text)
 		switch matched {
 		case "h", "help":
 			printHelp()
 		case "g", "gen", "generate":
-			internal.GenerateKeypair()
+			err := internal.GenerateKeyPair()
+			printResult("Generate Key Pair", err)
 		case "i", "init", "initialize":
-			internal.InitMessageFile()
+			err := internal.InitMessageFile()
+			printResult("Initialize Message File", err)
 		case "e", "encrypt":
-			_ = internal.Encrypt()
+			err := internal.Encrypt()
+			printResult("Encrypt", err)
 		case "d", "decrypt":
-			_ = internal.Decrypt()
+			err := internal.Decrypt()
+			printResult("Decrypt", err)
 		case "exit", "q":
-			internal.Info("Exit.")
+			info("Exit.")
 			break ALL
 		default:
-			internal.Info("Unknown input: \"" + text + "\", 'h' for help.")
+			info("Unknown input: \"" + text + "\", 'h' for help.")
 		}
 	}
 }
 
 func printHelp() {
-	internal.Info(`Options:
+	info(`Options:
   - h: this help
   - g: generate public & private key into files ('./priv.key' & './PUB.KEY')
   - i: initialize message file ('./message.txt')
@@ -56,4 +66,18 @@ func printHelp() {
   - d: decrypt cipher from './CIPHER.XXX' and write plain text to './message_decrypted.xxx'
   - exit: exit program
 `)
+}
+
+var logger = mlog.DefaultLogger()
+
+func info(message string) {
+	mlog.Log(logger, slog.LevelInfo, fmt.Sprintf("> %s", message))
+}
+
+func printResult(message string, err error) {
+	if err != nil {
+		mlog.Log(logger, slog.LevelError, fmt.Sprintf("%s Failed, %s\n", message, err.Error()))
+	} else {
+		mlog.Log(logger, slog.LevelInfo, fmt.Sprintf("> %s Success.\n", message))
+	}
 }

@@ -3,6 +3,8 @@ package components
 import (
 	"fmt"
 	"time"
+
+	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
 type OperateLog struct {
@@ -13,10 +15,13 @@ type OperateLog struct {
 var logData = make([]*OperateLog, 0)
 
 func Log(details string) {
-	logData = append(logData, &OperateLog{
+	newLog := &OperateLog{
 		Time:    time.Now().Format("2006-01-02 15:04:05.000"),
 		Details: details,
-	})
+	}
+	mlog.Info(newLog.String())
+
+	logData = append(logData, newLog)
 
 	if len(logData) > 1000 {
 		logData = logData[len(logData)-1000:] // 保留最近1000条记录

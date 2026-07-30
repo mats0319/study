@@ -28,8 +28,6 @@
   如果一个功能相对边缘化，则可以尝试使用pg；如果一个功能是核心或者有性能要求，则应考虑专门的系统
 - https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/ ：go语言自动插桩工具，
   可以在编译期间自动注入监测代码，增加系统可观测性（监控服务响应时间、数据库查询耗时、错误堆栈、资源占用等）
-- https://www.reddit.com/r/golang/comments/1utgamn/benchmark_surprise_passing_structs_by_value/ ：
-  go语言按照值传递一个结构体，性能可能比按照指针传递更好。因为按照值传递，结构体可能直接分配在栈上、不会触发逃逸分析
 - https://github.blog/security/6-security-settings-every-github-maintainer-should-enable-this-week/ ：
   github建议你开启的6项仓库安全设置
 - https://github.com/EvanLi/Github-Ranking/blob/master/Top100/Go.md，github ：go相关、star最多的100个库，每天更新

@@ -15,8 +15,8 @@ func makeSenderContent() *fyne.Container {
 	titleText := widget.NewLabel("> Sender:")
 
 	initializeFileButton := widget.NewButton("Initialize Message File", func() {
-		internal.InitMessageFile()
-		Log("Initialize Message File.")
+		err := internal.InitMessageFile()
+		printResult("Initialize Message File", err)
 	})
 	initializeFileButton.Resize(fyne.NewSize(200, 100))
 
@@ -44,8 +44,8 @@ func makeSenderContent() *fyne.Container {
 			return
 		}
 
-		isSuccess := internal.Encrypt()
-		Log("Encrypt Message " + boolToString(isSuccess) + ".")
+		err := internal.Encrypt()
+		printResult("Encrypt", err)
 	})
 
 	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)

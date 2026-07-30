@@ -12,7 +12,7 @@
 编译：以命令行形式使用无需外部依赖 (go install)，以GUI形式使用需要安装依赖
 
 - 我们提供的cli编译脚本写的不好、需要安装gui相关依赖，仅供参考
-- fyne存在交叉编译问题：仅根据文档中要求下载的内容，无法在linux上编译windows可执行文件
+- fyne存在交叉编译问题：仅根据文档中要求下载的内容，无法在linux上编译windows的可执行程序，所以gui的编译脚本也仅供参考
 
 [下载go、C编译器和系统显卡驱动程序](https://docs.fyne.io/started/quick/)
 
@@ -23,8 +23,8 @@ go install fyne.io/tools/cmd/fyne@latest
 
 ### GUI
 
-因为fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则可执行程序无法使用，
-因此放弃提供gui的二进制文件，仅在本小节附使用截图
+fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则可执行程序无法使用。  
+因此我们放弃提供gui的二进制文件，仅在本小节附使用截图。
 
 ![linux](doc/linux_use.png)
 
@@ -67,7 +67,7 @@ Elliptic Curve Digital Signature Algorithm 椭圆曲线数字签名算法 (ECDSA
 
 不同平台之间各有不同，但总体上多是：根据私钥计算公钥、根据公钥计算地址
 
-#### 加、解密
+### 加、解密
 
 使用随机数r将明文消息M生成密文C，该密文是一个点对： C = {rG, M+rK}
 
@@ -76,7 +76,7 @@ Elliptic Curve Digital Signature Algorithm 椭圆曲线数字签名算法 (ECDSA
 
 - 前文提到：公钥K=私钥k*基点G
 
-#### 签名验签 (?)
+### 签名验签 (?)
 
 签名：
 

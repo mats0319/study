@@ -6,9 +6,13 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"github.com/mats0319/secure_transfer/cmd/gui/components"
+	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
 func main() {
+	mlog.Initialize()
+	defer mlog.Close()
+
 	a := app.NewWithID("Secure Transfer") // 不链式调用下去，因为a可以创建多个window
 	a.Settings().SetTheme(&components.Theme{Theme: theme.DefaultTheme()})
 
