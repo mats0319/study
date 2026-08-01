@@ -32,6 +32,8 @@
   github建议你开启的6项仓库安全设置
 - https://github.com/EvanLi/Github-Ranking/blob/master/Top100/Go.md，github ：go相关、star最多的100个库，每天更新
 - https://blog.jetbrains.com/go/2026/07/20/escape-analysis/ ，介绍go语言逃逸分析，以及goland 2026.2如何帮助进行逃逸分析
+- https://rednafi.com/go/supervised-fire-and-forget/ ，一种通过goroutine池来管理goroutine的方式，
+  避免其数量不受控制、无法强制退出、panic导致主进程崩溃、因主进程退出而中断等问题
 
 ## 代码/工具
 
