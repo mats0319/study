@@ -13,6 +13,37 @@ func Curve() ecdh.Curve {
 	return ecdh.X25519()
 }
 
+// FirstFile fileBaseName: file name without extension
+func FirstFile(fileBaseName string) (fileName string, fileSize int64, e *Error) {
+	entry, err := os.ReadDir("./")
+	if err != nil {
+		e = ErrReadDir().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
+
+	for i := range entry {
+		if entry[i].IsDir() {
+			continue // ignore folder
+		}
+
+		fileInfo, err := entry[i].Info()
+		if err != nil {
+			e = ErrGetFileInfo().WithCause(err).WithParam("name", entry[i].Name())
+			mlog.Error(e.String())
+			continue
+		}
+
+		if strings.HasPrefix(fileInfo.Name(), fileBaseName) { // match file name without extension
+			fileName = fileInfo.Name()
+			fileSize = fileInfo.Size()
+			break
+		}
+	}
+
+	return
+}
+
 func GetFirstFile(fileName string) (filePath string, fileBytes []byte, e *Error) {
 	entry, err := os.ReadDir("./")
 	if err != nil {

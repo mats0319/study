@@ -11,5 +11,5 @@ const (
 	salt            = "mats0319"
 	info            = "secure_transfer"
 	publicKeyLength = 32
-	driveKeyLength  = 32
+	deriveKeyLength = 32
 )

@@ -10,3 +10,6 @@ cmd/gui/sample/log.log
 
 utils/log/log.log
 utils/log/*.log.gz
+
+test/*
+!test/*.go

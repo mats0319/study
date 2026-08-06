@@ -1,18 +1,15 @@
 package internal
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/ecdh"
 	"crypto/ecdsa"
-	"crypto/hkdf"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/mats0319/secure_transfer/internal/lib"
 	"github.com/mats0319/secure_transfer/utils"
 	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
@@ -23,23 +20,25 @@ func Encrypt() error {
 		return e
 	}
 
-	filePath, fileBytes, e := utils.GetFirstFile(plainTextFileName)
+	// get file name(s)
+	originFileName, originFileSize, e := utils.FirstFile(utils.OriginFileName)
 	if e != nil {
 		return e
 	}
 
-	encryptedBytes, e := encrypt(pubKey, fileBytes)
-	if e != nil {
-		return e
-	}
+	index := strings.LastIndex(originFileName, ".")
+	extension := originFileName[index+1:]
+	encFileName := fmt.Sprintf("%s.%s", utils.EncryptedFileName, strings.ToUpper(extension))
 
-	extension := strings.ToUpper(utils.GetExtension(filePath, plainTextFileName))
-	fileName := fmt.Sprintf("./%s%s", cipherFileName, extension)
-	err := os.WriteFile(fileName, encryptedBytes, 0777)
-	if err != nil {
-		e = utils.ErrSaveCiphertext().WithCause(err)
-		mlog.Error(e.String())
-		return e
+	// select encryptor
+	if originFileSize <= utils.OnceEncMaxSize {
+		enc := lib.NewEncryptorOnce(pubKey)
+		e := enc.Encrypt(originFileName, encFileName)
+		if e != nil {
+			return e
+		}
+	} else {
+		// todo: enc stream
 	}
 
 	return nil
@@ -83,75 +82,6 @@ func deserializePublicKey() (pubKey *ecdh.PublicKey, e *utils.Error) {
 			return
 		}
 	}
-
-	return
-}
-
-func encrypt(pubKey *ecdh.PublicKey, content []byte) (encryptedBytes []byte, e *utils.Error) {
-	pubKeyBytes, aesKey, e := deriveKeyInEncrypt(pubKey)
-	if e != nil {
-		return
-	}
-
-	ciphertext, e := aesEncrypt(aesKey, content)
-	if e != nil {
-		return
-	}
-
-	encryptedBytes = make([]byte, 1+len(pubKeyBytes)+len(ciphertext))
-	copy(encryptedBytes[:1], []byte{byte(len(pubKeyBytes))})
-	copy(encryptedBytes[1:1+len(pubKeyBytes)], pubKeyBytes)
-	copy(encryptedBytes[1+len(pubKeyBytes):], ciphertext)
-
-	return
-}
-
-func deriveKeyInEncrypt(pubKey *ecdh.PublicKey) (pubKeyBytes []byte, aesKey []byte, e *utils.Error) {
-	// ecdh
-	tempPrivKey, err := utils.Curve().GenerateKey(nil)
-	if err != nil {
-		e = utils.ErrGeneratePrivateKey().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	pubKeyBytes = tempPrivKey.PublicKey().Bytes()
-
-	sharedKey, err := tempPrivKey.ECDH(pubKey)
-	if err != nil {
-		e = utils.ErrECDH().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	// kdf
-	aesKey, err = hkdf.Key(sha256.New, sharedKey, []byte(salt), info, driveKeyLength)
-	if err != nil {
-		e = utils.ErrKDF().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	return
-}
-
-// aes-gcm encrypt
-func aesEncrypt(aesKey []byte, content []byte) (encryptedBytes []byte, e *utils.Error) {
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		e = utils.ErrAESNewCipher().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	aesGCM, err := cipher.NewGCMWithRandomNonce(block)
-	if err != nil {
-		e = utils.ErrAESNewGCM().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	encryptedBytes = aesGCM.Seal(nil, nil, content, nil)
 
 	return
 }

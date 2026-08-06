@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mats0319/secure_transfer/internal/lib"
 	"github.com/mats0319/secure_transfer/utils"
 	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
@@ -23,23 +24,32 @@ func Decrypt() error {
 		return e
 	}
 
-	filePath, fileBytes, e := utils.GetFirstFile(cipherFileName)
+	// get file name(s)
+	encFileName, encFileSize, e := utils.FirstFile(utils.EncryptedFileName)
 	if e != nil {
 		return e
 	}
 
-	decryptedBytes, e := decrypt(privKey, fileBytes)
+	fileHeader := &lib.FileHeader{}
+	e = fileHeader.Deserialize(encFileName)
 	if e != nil {
 		return e
 	}
 
-	extension := strings.ToLower(utils.GetExtension(filePath, cipherFileName))
-	fileName := fmt.Sprintf("./%s%s", plainTextDecryptedFileName, extension)
-	err := os.WriteFile(fileName, decryptedBytes, 0777)
-	if err != nil {
-		e := utils.ErrSavePlaintext().WithCause(err)
-		mlog.Error(e.String())
-		return e
+	index := strings.LastIndex(encFileName, ".")
+	extension := encFileName[index+1:]
+	decFileName := fmt.Sprintf("%s.%s", utils.DecryptedFileName, strings.ToUpper(extension))
+
+	// select decryptor
+	switch fileHeader.EncMethod {
+	case utils.EncryptMethod_Once:
+		dec := lib.NewDecryptorOnce(privKey, fileHeader, encFileSize)
+		e := dec.Decrypt(encFileName, decFileName)
+		if e != nil {
+			return e
+		}
+	case utils.EncryptMethod_Stream:
+		// todo dec stream
 	}
 
 	return nil
@@ -127,7 +137,7 @@ func deriveKeyInDecrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (aesKe
 	}
 
 	// kdf
-	aesKey, err = hkdf.Key(sha256.New, sharedKey, []byte(salt), info, driveKeyLength)
+	aesKey, err = hkdf.Key(sha256.New, sharedKey, []byte(salt), info, deriveKeyLength)
 	if err != nil {
 		e = utils.ErrKDF().WithCause(err)
 		mlog.Error(e.String())

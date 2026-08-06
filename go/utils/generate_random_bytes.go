@@ -8,6 +8,7 @@ import (
 
 const CharactersLibrary = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const useBits = 6 // 6个bit位可以表示全部字符库中的字符
+const useMask = 1<<useBits - 1
 
 // GenerateRandomBytes_CharacterLibraryIndex generate random 'length' readable Bytes
 func GenerateRandomBytes_CharacterLibraryIndex(length int) []byte {
@@ -19,7 +20,7 @@ func GenerateRandomBytes_CharacterLibraryIndex(length int) []byte {
 			randomNum, remainBits = rand.Int64(), 64
 		}
 
-		index := int(randomNum & (1<<useBits - 1)) // 0b0011 1111
+		index := int(randomNum & useMask) // 0b0011 1111
 		if index < len(CharactersLibrary) {
 			randomNum >>= useBits
 			remainBits -= useBits

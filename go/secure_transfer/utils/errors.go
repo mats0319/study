@@ -43,6 +43,15 @@ var (
 	ErrKDF                = newError(40102, "KDF Failed")
 	ErrAESNewCipher       = newError(40103, "AES New Cipher Failed")
 	ErrAESNewGCM          = newError(40104, "AES New GCM Failed")
+
+	// define module: 5xxxx
+	// - 500xx: file header
+	ErrFileHeader    = newError(50001, "Invalid File Header")
+	ErrReadFile      = newError(50101, "Read File Failed")
+	ErrWriteFile     = newError(50102, "Write File Failed")
+	ErrOpenFile      = newError(50103, "Open File Failed")
+	ErrEncryptedFile = newError(50201, "Invalid Encrypted File")
+	ErrEncryptNonce  = newError(50301, "Invalid Encrypt Nonce")
 )
 
 // 函数返回函数而不是实例，可以避免多处使用同一变量会继承历史数据的问题，详见测试代码
