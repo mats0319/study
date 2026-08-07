@@ -2,6 +2,8 @@ package lib
 
 import (
 	"bufio"
+	"errors"
+	"io"
 	"os"
 
 	"github.com/mats0319/secure_transfer/utils"
@@ -56,7 +58,7 @@ func (fh *FileHeader) Serialize() (fhBytes []byte, e *utils.Error) {
 func (fh *FileHeader) Deserialize(encFile string) (e *utils.Error) {
 	file, err := os.Open(encFile)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -75,7 +77,7 @@ func (fh *FileHeader) Deserialize(encFile string) (e *utils.Error) {
 	if e != nil {
 		return
 	}
-	if n != int(fileHeaderLen[0]) {
+	if n != len(data) {
 		e = utils.ErrFileHeader().
 			WithParam("length", n).
 			WithParam("want", fileHeaderLen[0])
@@ -140,17 +142,41 @@ func (fh *FileHeader) canDeserialize(data []byte) (e *utils.Error) {
 		e = utils.ErrFileHeader().WithParam("aad len", data[6])
 	}
 
-	nonceStart := 7 + utils.DeriveKeySaltLength
-	aadStart := nonceStart + utils.AESBaseNonceLength
-	pubKStart := aadStart + utils.FileHeaderAADLength
-	length := pubKStart + utils.PublicKeyLength
-
-	if len(data) != length {
-		e = utils.ErrFileHeader().WithParam("length", len(data))
-	}
-
 	if e != nil {
 		mlog.Error(e.String())
+	}
+
+	return
+}
+
+func skipFileHeader(reader io.Reader) (n int64, e *utils.Error) {
+	fileHeaderLen := make([]byte, 1)
+	_, e = readExact(reader, fileHeaderLen)
+	if e != nil {
+		return
+	}
+
+	fileHeader := make([]byte, fileHeaderLen[0])
+	_, e = readExact(reader, fileHeader)
+	if e != nil {
+		return
+	}
+
+	n = 1 + int64(fileHeaderLen[0])
+
+	return
+}
+
+func readExact(reader io.Reader, buf []byte) (n int, e *utils.Error) {
+	n, err := io.ReadFull(reader, buf)
+	if err != nil {
+		if errors.Is(err, io.ErrUnexpectedEOF) || err == io.EOF {
+			return // 不视为错误
+		}
+
+		e = utils.ErrReadExact().WithCause(err)
+		mlog.Error(e.String())
+		return
 	}
 
 	return

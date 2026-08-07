@@ -76,7 +76,7 @@ func (dec *decryptorStream) init() (e *utils.Error) {
 	// ecdh
 	pubKey, err := utils.Curve().NewPublicKey(dec.fileHeader.PublicKey)
 	if err != nil {
-		e = utils.ErrInvalidPublicKey().WithCause(err)
+		e = utils.ErrECDH().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -119,7 +119,7 @@ func (dec *decryptorStream) init() (e *utils.Error) {
 func (dec *decryptorStream) read(ch chan *frame, encFile string) (e *utils.Error) {
 	file, err := os.Open(encFile)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -157,10 +157,7 @@ func (dec *decryptorStream) decrypt(encryptedFrameCh chan *frame, decryptedFrame
 			break
 		}
 
-		nonce, e := dec.makeNonce(frameIns.isLastFrame, frameIns.index)
-		if e != nil {
-			return e
-		}
+		nonce := makeNonce(dec.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
 
 		decryptedBytes, err := dec.aesGCM.Open(nil, nonce, frameIns.data, dec.fileHeader.AAD)
 		if err != nil {
@@ -183,7 +180,7 @@ func (dec *decryptorStream) write(ch chan *frame, decFile string) (e *utils.Erro
 
 	file, err := os.OpenFile(decFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenDecFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -202,7 +199,7 @@ func (dec *decryptorStream) write(ch chan *frame, decFile string) (e *utils.Erro
 		for frameIns != nil && frameIns.index == writeIndex {
 			_, err := writer.Write(frameIns.data)
 			if err != nil {
-				e = utils.ErrWriteFile().WithCause(err)
+				e = utils.ErrWriteDecFile().WithCause(err)
 				mlog.Error(e.String())
 				return
 			}
@@ -216,34 +213,10 @@ func (dec *decryptorStream) write(ch chan *frame, decFile string) (e *utils.Erro
 
 	err = writer.Flush()
 	if err != nil {
-		e = utils.ErrWriteFile().WithCause(err)
+		e = utils.ErrWriteDecFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
-
-	return
-}
-
-func (dec *decryptorStream) makeNonce(isLastFrame bool, counter int32) (nonce []byte, e *utils.Error) {
-	nonce = make([]byte, dec.aesGCM.NonceSize())
-	if len(nonce) < utils.AESBaseNonceLength+1+4 {
-		e = utils.ErrEncryptNonce().
-			WithParam("length", len(nonce)).
-			WithParam("want", utils.AESBaseNonceLength+1+4)
-		mlog.Error(e.String())
-		return
-	}
-
-	copy(nonce[:utils.AESBaseNonceLength], dec.fileHeader.BaseNonce)
-	if isLastFrame {
-		nonce[utils.AESBaseNonceLength] = 1
-	} else {
-		nonce[utils.AESBaseNonceLength] = 0
-	}
-	nonce[utils.AESBaseNonceLength+1] = byte(counter >> 24)
-	nonce[utils.AESBaseNonceLength+2] = byte(counter >> 16)
-	nonce[utils.AESBaseNonceLength+3] = byte(counter >> 8)
-	nonce[utils.AESBaseNonceLength+4] = byte(counter)
 
 	return
 }

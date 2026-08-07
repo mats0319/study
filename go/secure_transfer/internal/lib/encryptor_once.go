@@ -33,7 +33,7 @@ func (enc *encryptorOnce) Encrypt(originFile string, encFile string) *utils.Erro
 
 	originFileBytes, err := os.ReadFile(originFile)
 	if err != nil {
-		e := utils.ErrReadFile().WithCause(err).WithParam("enc bin file", originFile)
+		e := utils.ErrReadOriginFile().WithCause(err)
 		mlog.Error(e.String())
 		return e
 	}
@@ -47,7 +47,7 @@ func (enc *encryptorOnce) Encrypt(originFile string, encFile string) *utils.Erro
 
 	file, err := os.OpenFile(encFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		e := utils.ErrOpenFile().WithCause(err)
+		e := utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return e
 	}
@@ -61,7 +61,7 @@ func (enc *encryptorOnce) Encrypt(originFile string, encFile string) *utils.Erro
 
 	err = writer.Flush()
 	if err != nil {
-		e := utils.ErrWriteFile().WithCause(err)
+		e := utils.ErrWriteEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return e
 	}
@@ -76,7 +76,7 @@ func (enc *encryptorOnce) init() (e *utils.Error) {
 	// ecdh
 	tempPrivKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
-		e = utils.ErrGeneratePrivateKey().WithCause(err)
+		e = utils.ErrECDH().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}

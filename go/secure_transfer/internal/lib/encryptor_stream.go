@@ -7,8 +7,6 @@ import (
 	"crypto/ecdh"
 	"crypto/hkdf"
 	"crypto/sha256"
-	"errors"
-	"io"
 	"os"
 	"sync"
 
@@ -81,7 +79,7 @@ func (enc *encryptorStream) init() (e *utils.Error) {
 	// ecdh
 	tempPrivKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
-		e = utils.ErrGeneratePrivateKey().WithCause(err)
+		e = utils.ErrECDH().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -126,7 +124,7 @@ func (enc *encryptorStream) init() (e *utils.Error) {
 func (enc *encryptorStream) read(ch chan *frame, originFile string) (e *utils.Error) {
 	file, err := os.Open(originFile)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenOriginFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -168,10 +166,7 @@ func (enc *encryptorStream) encrypt(originFrameCh chan *frame, encryptedFrameCh 
 			break
 		}
 
-		nonce, e := enc.makeNonce(frameIns.isLastFrame, frameIns.index)
-		if e != nil {
-			return e
-		}
+		nonce := makeNonce(enc.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
 
 		frameIns.data = enc.aesGCM.Seal(nil, nonce, frameIns.data, enc.fileHeader.AAD)
 
@@ -184,7 +179,7 @@ func (enc *encryptorStream) encrypt(originFrameCh chan *frame, encryptedFrameCh 
 func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Error) {
 	file, err := os.OpenFile(encFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -196,8 +191,19 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 	if e != nil {
 		return
 	}
-	_ = writer.WriteByte(byte(len(fileHeaderBytes)))
-	_, _ = writer.Write(fileHeaderBytes)
+
+	err = writer.WriteByte(byte(len(fileHeaderBytes)))
+	if err != nil {
+		e = utils.ErrWriteEncFile().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
+	_, err = writer.Write(fileHeaderBytes)
+	if err != nil {
+		e = utils.ErrWriteEncFile().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
 
 	frameCache := make(map[int32]*frame)
 	writeIndex := int32(0)
@@ -213,7 +219,7 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 		for frameIns != nil && frameIns.index == writeIndex {
 			_, err := writer.Write(frameIns.serialize())
 			if err != nil {
-				e = utils.ErrWriteFile().WithCause(err)
+				e = utils.ErrWriteEncFile().WithCause(err)
 				mlog.Error(e.String())
 				return
 			}
@@ -227,46 +233,7 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 
 	err = writer.Flush()
 	if err != nil {
-		e = utils.ErrWriteFile().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	return
-}
-
-func (enc *encryptorStream) makeNonce(isLastFrame bool, counter int32) (nonce []byte, e *utils.Error) {
-	nonce = make([]byte, enc.aesGCM.NonceSize())
-	if len(nonce) < utils.AESBaseNonceLength+1+4 {
-		e = utils.ErrEncryptNonce().
-			WithParam("length", len(nonce)).
-			WithParam("want", utils.AESBaseNonceLength+1+4)
-		mlog.Error(e.String())
-		return
-	}
-
-	copy(nonce[:utils.AESBaseNonceLength], enc.fileHeader.BaseNonce)
-	if isLastFrame {
-		nonce[utils.AESBaseNonceLength] = 1
-	} else {
-		nonce[utils.AESBaseNonceLength] = 0
-	}
-	nonce[utils.AESBaseNonceLength+1] = byte(counter >> 24)
-	nonce[utils.AESBaseNonceLength+2] = byte(counter >> 16)
-	nonce[utils.AESBaseNonceLength+3] = byte(counter >> 8)
-	nonce[utils.AESBaseNonceLength+4] = byte(counter)
-
-	return
-}
-
-func readExact(reader io.Reader, buf []byte) (n int, e *utils.Error) {
-	n, err := io.ReadFull(reader, buf)
-	if err != nil {
-		if errors.Is(err, io.ErrUnexpectedEOF) || err == io.EOF {
-			return // 不视为错误
-		}
-
-		e = utils.ErrReadFile().WithCause(err)
+		e = utils.ErrWriteEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}

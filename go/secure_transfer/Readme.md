@@ -89,7 +89,7 @@ ciphertext
 代码在`test/`，包括一次性加密和流式加密的功能测试与基准测试，以下是基准测试结果：
 
 ```cmd
-# go test -bench=. -benchmem  # 同时执行普通测试，保证功能正确性
+$ go test -bench=. -benchmem  # 同时执行普通测试，保证功能正确性
 goos: linux
 goarch: amd64
 pkg: github.com/mats0319/secure_transfer/test
@@ -99,8 +99,3 @@ BenchmarkEncryptSameFile/Encrypt_Stream-16                     2         6342810
 PASS
 ok      github.com/mats0319/secure_transfer/test        6.276s
 ```
-
-## 问题
-
-- 编写技术验证demo遇到问题：最新版本的go（1.25）和ethereum（1.16）无法匹配。  
-  因为我们没有使用以太坊的曲线 (secp256k1)。放弃go-ethereum，自行编写相关过程（密钥协商、派生和加/解密）

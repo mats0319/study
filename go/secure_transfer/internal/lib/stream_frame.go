@@ -72,3 +72,21 @@ func (f *frame) deserialize(reader io.Reader) (e *utils.Error) {
 
 	return
 }
+
+func makeNonce(baseNonce []byte, isLastFrame bool, counter int32) []byte {
+	nonce := make([]byte, utils.AESBaseNonceLength+1+4)
+	copy(nonce[:utils.AESBaseNonceLength], baseNonce)
+
+	if isLastFrame {
+		nonce[utils.AESBaseNonceLength] = 1
+	} else {
+		nonce[utils.AESBaseNonceLength] = 0
+	}
+
+	nonce[utils.AESBaseNonceLength+1] = byte(counter >> 24)
+	nonce[utils.AESBaseNonceLength+2] = byte(counter >> 16)
+	nonce[utils.AESBaseNonceLength+3] = byte(counter >> 8)
+	nonce[utils.AESBaseNonceLength+4] = byte(counter)
+
+	return nonce
+}

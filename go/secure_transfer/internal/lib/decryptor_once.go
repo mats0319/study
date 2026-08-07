@@ -7,7 +7,6 @@ import (
 	"crypto/ecdh"
 	"crypto/hkdf"
 	"crypto/sha256"
-	"io"
 	"os"
 
 	"github.com/mats0319/secure_transfer/utils"
@@ -51,7 +50,7 @@ func (dec *decryptorOnce) Decrypt(encFile string, decFile string) (e *utils.Erro
 
 	err = os.WriteFile(decFile, decryptedBytes, 0644)
 	if err != nil {
-		e = utils.ErrWriteFile().WithCause(err)
+		e = utils.ErrWriteDecFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -63,7 +62,7 @@ func (dec *decryptorOnce) init() (e *utils.Error) {
 	// ecdh
 	pubKey, err := utils.Curve().NewPublicKey(dec.fileHeader.PublicKey)
 	if err != nil {
-		e = utils.ErrInvalidPublicKey().WithCause(err)
+		e = utils.ErrECDH().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -112,7 +111,7 @@ func (dec *decryptorOnce) init() (e *utils.Error) {
 func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *utils.Error) {
 	file, err := os.Open(encFile)
 	if err != nil {
-		e = utils.ErrOpenFile().WithCause(err)
+		e = utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
@@ -126,7 +125,7 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 	}
 	if dec.encFileSize < n {
 		e = utils.ErrEncryptedFile().
-			WithParam("file length", dec.encFileSize).
+			WithParam("length", dec.encFileSize).
 			WithParam("header length", n)
 		mlog.Error(e.String())
 		return
@@ -137,24 +136,6 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 	if e != nil {
 		return
 	}
-
-	return
-}
-
-func skipFileHeader(reader io.Reader) (n int64, e *utils.Error) {
-	fileHeaderLen := make([]byte, 1)
-	_, e = readExact(reader, fileHeaderLen)
-	if e != nil {
-		return
-	}
-
-	fileHeader := make([]byte, fileHeaderLen[0])
-	_, e = readExact(reader, fileHeader)
-	if e != nil {
-		return
-	}
-
-	n = 1 + int64(fileHeaderLen[0])
 
 	return
 }

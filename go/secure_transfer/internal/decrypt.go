@@ -79,14 +79,14 @@ func deserializePrivateKey() (privKey *ecdh.PrivateKey, e *utils.Error) {
 	if !ok {
 		ecdsaPrivKey, ok := privKeyI.(*ecdsa.PrivateKey)
 		if !ok {
-			e = utils.ErrInvalidPrivateKey()
+			e = utils.ErrParsePrivateKey()
 			mlog.Error(e.String())
 			return
 		}
 
 		privKey, err = ecdsaPrivKey.ECDH()
 		if err != nil {
-			e = utils.ErrInvalidPrivateKey().WithCause(err)
+			e = utils.ErrParsePrivateKey().WithCause(err)
 			mlog.Error(e.String())
 			return
 		}

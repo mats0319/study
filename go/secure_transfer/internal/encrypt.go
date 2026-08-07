@@ -72,14 +72,14 @@ func deserializePublicKey() (pubKey *ecdh.PublicKey, e *utils.Error) {
 	if !ok {
 		ecdsaPubKey, ok := pubKeyI.(*ecdsa.PublicKey) // x509 parser usually return this type
 		if !ok {
-			e = utils.ErrInvalidPublicKey()
+			e = utils.ErrParsePublicKey()
 			mlog.Error(e.String())
 			return
 		}
 
 		pubKey, err = ecdsaPubKey.ECDH()
 		if err != nil {
-			e = utils.ErrInvalidPublicKey().WithCause(err)
+			e = utils.ErrParsePublicKey().WithCause(err)
 			mlog.Error(e.String())
 			return
 		}
