@@ -31,14 +31,14 @@ func (enc *encryptorOnce) Encrypt(originFile string, encFile string) *utils.Erro
 		return e
 	}
 
-	binFileBytes, err := os.ReadFile(originFile)
+	originFileBytes, err := os.ReadFile(originFile)
 	if err != nil {
 		e := utils.ErrReadFile().WithCause(err).WithParam("enc bin file", originFile)
 		mlog.Error(e.String())
 		return e
 	}
 
-	encryptedBytes := enc.aesGCM.Seal(nil, enc.nonce, binFileBytes, enc.fileHeader.AAD)
+	encryptedBytes := enc.aesGCM.Seal(nil, enc.nonce, originFileBytes, enc.fileHeader.AAD)
 
 	fileHeaderBytes, e := enc.fileHeader.Serialize()
 	if e != nil {

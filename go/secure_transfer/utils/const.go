@@ -5,7 +5,11 @@ const (
 	FileHeaderAAD   = "secure transfer aad"
 	DeriveKeyInfo   = "secure transfer derive key info"
 
+	PrivateKeyFileName = "priv.key"
+	PublicKeyFileName  = "PUB.KEY"
+
 	OriginFileName    = "message"
+	DefaultExtension  = "txt"
 	EncryptedFileName = "CIPHER"
 	DecryptedFileName = "message_decrypted"
 )
@@ -25,7 +29,7 @@ const (
 type EncryptMethod = byte
 
 const (
-	EncryptMethod_Once   EncryptMethod = 1 // 一次性读取全部文件到内存
+	EncryptMethod_Once   EncryptMethod = 1 // 一次性读取全部文件到内存中加密
 	EncryptMethod_Stream               = 2 // 流式加密
 )
 

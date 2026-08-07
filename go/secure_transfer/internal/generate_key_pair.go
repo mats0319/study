@@ -42,7 +42,7 @@ func serializePrivateKey(privKey *ecdh.PrivateKey) *utils.Error {
 	block := &pem.Block{Type: "Private Key", Bytes: privKeyBytes}
 	blockBytes := pem.EncodeToMemory(block)
 
-	err = os.WriteFile(privateKeyFilePath, blockBytes, 0600)
+	err = os.WriteFile(utils.PrivateKeyFileName, blockBytes, 0600)
 	if err != nil {
 		e := utils.ErrSavePrivateKey().WithCause(err)
 		mlog.Error(e.String())
@@ -63,7 +63,7 @@ func serializePublicKey(pubKey *ecdh.PublicKey) *utils.Error {
 	block := &pem.Block{Type: "Public Key", Bytes: pubKeyBytes}
 	blockBytes := pem.EncodeToMemory(block)
 
-	err = os.WriteFile(publicKeyFilePath, blockBytes, 0644)
+	err = os.WriteFile(utils.PublicKeyFileName, blockBytes, 0644)
 	if err != nil {
 		e := utils.ErrSavePublicKey().WithCause(err)
 		mlog.Error(e.String())

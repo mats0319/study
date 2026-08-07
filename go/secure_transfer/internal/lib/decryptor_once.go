@@ -118,7 +118,7 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 	}
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
+	reader := bufio.NewReaderSize(file, utils.FrameSize*2)
 
 	n, e := skipFileHeader(reader)
 	if e != nil {
@@ -133,10 +133,8 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 	}
 
 	ciphertext = make([]byte, dec.encFileSize-n)
-	_, err = reader.Read(ciphertext)
-	if err != nil {
-		e = utils.ErrReadFile().WithCause(err)
-		mlog.Error(e.String())
+	_, e = readExact(reader, ciphertext)
+	if e != nil {
 		return
 	}
 
@@ -145,18 +143,14 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 
 func skipFileHeader(reader io.Reader) (n int64, e *utils.Error) {
 	fileHeaderLen := make([]byte, 1)
-	_, err := reader.Read(fileHeaderLen)
-	if err != nil {
-		e = utils.ErrReadFile().WithCause(err)
-		mlog.Error(e.String())
+	_, e = readExact(reader, fileHeaderLen)
+	if e != nil {
 		return
 	}
 
 	fileHeader := make([]byte, fileHeaderLen[0])
-	_, err = reader.Read(fileHeader)
-	if err != nil {
-		e = utils.ErrReadFile().WithCause(err)
-		mlog.Error(e.String())
+	_, e = readExact(reader, fileHeader)
+	if e != nil {
 		return
 	}
 

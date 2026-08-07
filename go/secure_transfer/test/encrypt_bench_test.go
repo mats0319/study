@@ -1,53 +1,72 @@
-package internal
+package test
 
 import (
 	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"os"
-	"strings"
+	"testing"
 
+	"github.com/mats0319/secure_transfer/internal"
 	"github.com/mats0319/secure_transfer/internal/lib"
 	"github.com/mats0319/secure_transfer/utils"
 	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
-func Encrypt() error {
+const (
+	publicKeyFileName  = "PUB.KEY"
+	originFileName     = "message.txt"
+	encFileName_Once   = "CIPHER_ONCE.TXT"
+	encFileName_Stream = "CIPHER_STREAM.TXT"
+)
+
+func BenchmarkEncryptSameFile(b *testing.B) {
+	err := generateRandomFile("message.txt", 1024)
+	if err != nil {
+		b.Error(err)
+		return
+	}
+
+	err = internal.GenerateKeyPair()
+	if err != nil {
+		b.Error(err)
+		return
+	}
+
 	pubKey, e := deserializePublicKey()
 	if e != nil {
-		return e
+		b.Error(e)
+		return
 	}
 
-	// get file name(s)
-	originFileName, originFileSize, e := utils.FirstFile(utils.OriginFileName)
-	if e != nil {
-		return e
-	}
+	b.Run("Encrypt Once", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			enc := lib.NewEncryptorOnce(pubKey)
+			err := enc.Encrypt(originFileName, encFileName_Once)
+			if err != nil {
+				b.Error(err)
+				return
+			}
+		}
+	})
 
-	index := strings.LastIndex(originFileName, ".")
-	extension := originFileName[index+1:]
-	encFileName := fmt.Sprintf("%s.%s", utils.EncryptedFileName, strings.ToUpper(extension))
-
-	// select encryptor
-	var enc lib.Encryptor
-	if originFileSize <= utils.OnceEncMaxSize {
-		enc = lib.NewEncryptorOnce(pubKey)
-	} else {
-		enc = lib.NewEncryptorStream(pubKey)
-	}
-
-	e = enc.Encrypt(originFileName, encFileName)
-	if e != nil {
-		return e
-	}
-
-	return nil
+	b.Run("Encrypt Stream", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			enc := lib.NewEncryptorStream(pubKey)
+			err := enc.Encrypt(originFileName, encFileName_Stream)
+			if err != nil {
+				b.Error(err)
+				return
+			}
+		}
+	})
 }
 
 func deserializePublicKey() (pubKey *ecdh.PublicKey, e *utils.Error) {
-	pubKeyBytes, err := os.ReadFile(utils.PublicKeyFileName)
+	pubKeyBytes, err := os.ReadFile(publicKeyFileName)
 	if err != nil {
 		e = utils.ErrReadPublicKey().WithCause(err)
 		mlog.Error(e.String())

@@ -26,7 +26,7 @@ go install fyne.io/tools/cmd/fyne@latest
 ### GUI
 
 fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则可执行程序无法使用。  
-因此我们放弃提供gui的二进制文件，仅在本小节附使用截图。
+因此我们提供的gui的二进制文件在你的设备上无法运行是有可能的，附使用截图。
 
 ![linux](doc/linux_use.png)
 
@@ -37,6 +37,9 @@ fyne依赖cgo，如果编译环境和你的系统的glibc版本不兼容，则�
 - 曲线与密钥协商算法：Curve25519 X25519
 - 最终加密密钥派生算法：sha256
 - 对称加密算法：aes-gcm
+- 加密方式：
+    - 文件大小 <10m：一次性读取到内存加密
+    - 文件大小 >10m：流式加密
 
 过程：
 
@@ -54,6 +57,7 @@ ciphertext
 ```
 
 - `header len`：整个文件头（一直到正文之前）的长度
+    - 本工具中长度固定为81，即加密文件将固定以`QST`开头
 - `ST`：开头标记
 - `enc method`：一次性读取到内存中加密/流式加密
 - `salt`：用于密钥派生的salt
@@ -66,11 +70,35 @@ ciphertext
     - 本工具中长度固定为32
 - `aad`：加密时的关联信息
 - `ciphertext`：密文
-    - 流式加密密文：每一帧包含帧nonce（完整nonce的'1+4'部分）和密文
+    - 流式加密密文（一帧）：
+        - 末帧标识：1 Byte
+        - 帧索引：4 Byte
+        - 有效内容长度：4 Byte
+        - 有效内容：x Byte
 
 ## 技术准备
 
 [见tech_prepare.md](doc/tech_prepare.md)
+
+## 开发计划
+
+- 优化流式加密性能：根据基准测试结果，当前流式加密代码分配内存比直接读取全文还多，尝试优化它
+
+## 测试
+
+代码在`test/`，包括一次性加密和流式加密的功能测试与基准测试，以下是基准测试结果：
+
+```cmd
+# go test -bench=. -benchmem  # 同时执行普通测试，保证功能正确性
+goos: linux
+goarch: amd64
+pkg: github.com/mats0319/secure_transfer/test
+cpu: AMD Ryzen 7 7700 8-Core Processor              
+BenchmarkEncryptSameFile/Encrypt_Once-16                       1        1338428994 ns/op        2147507752 B/op       41 allocs/op
+BenchmarkEncryptSameFile/Encrypt_Stream-16                     2         634281066 ns/op        3249607472 B/op     5207 allocs/op
+PASS
+ok      github.com/mats0319/secure_transfer/test        6.276s
+```
 
 ## 问题
 

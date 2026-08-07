@@ -15,7 +15,7 @@ import (
 //     生成消息文件是辅助功能，它是因为我们固定了消息文件名而提供的辅助方案，因为它而改变`全部主要功能均只需要单个字母作为指令`
 //     的规则我认为并不合适，最终选择将该辅助功能重新命名为`初始化消息文件`，暗合`这只是初始化的文件，你还需要修改`之意。
 func InitMessageFile() error {
-	err := os.WriteFile(plainTextFileName+defaultExtension, []byte("[Write your message here]"), 0777)
+	err := os.WriteFile(utils.OriginFileName+utils.DefaultExtension, []byte("[Write your message here]"), 0644)
 	if err != nil {
 		e := utils.ErrInitMessageFile().WithCause(err)
 		mlog.Error(e.String())

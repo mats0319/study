@@ -1,12 +1,8 @@
 package internal
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/ecdh"
 	"crypto/ecdsa"
-	"crypto/hkdf"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -38,25 +34,27 @@ func Decrypt() error {
 
 	index := strings.LastIndex(encFileName, ".")
 	extension := encFileName[index+1:]
-	decFileName := fmt.Sprintf("%s.%s", utils.DecryptedFileName, strings.ToUpper(extension))
+	decFileName := fmt.Sprintf("%s.%s", utils.DecryptedFileName, strings.ToLower(extension))
 
 	// select decryptor
+	var dec lib.Decryptor
 	switch fileHeader.EncMethod {
 	case utils.EncryptMethod_Once:
-		dec := lib.NewDecryptorOnce(privKey, fileHeader, encFileSize)
-		e := dec.Decrypt(encFileName, decFileName)
-		if e != nil {
-			return e
-		}
+		dec = lib.NewDecryptorOnce(privKey, fileHeader, encFileSize)
 	case utils.EncryptMethod_Stream:
-		// todo dec stream
+		dec = lib.NewDecryptorStream(privKey, fileHeader)
+	}
+
+	e = dec.Decrypt(encFileName, decFileName)
+	if e != nil {
+		return e
 	}
 
 	return nil
 }
 
 func deserializePrivateKey() (privKey *ecdh.PrivateKey, e *utils.Error) {
-	privKeyBytes, err := os.ReadFile(privateKeyFilePath)
+	privKeyBytes, err := os.ReadFile(utils.PrivateKeyFileName)
 	if err != nil {
 		e = utils.ErrReadPrivateKey().WithCause(err)
 		mlog.Error(e.String())
@@ -92,81 +90,6 @@ func deserializePrivateKey() (privKey *ecdh.PrivateKey, e *utils.Error) {
 			mlog.Error(e.String())
 			return
 		}
-	}
-
-	return
-}
-
-func decrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (decryptedBytes []byte, e *utils.Error) {
-	aesKey, ciphertext, e := deriveKeyInDecrypt(privKey, pubKeyFileBytes)
-	if e != nil {
-		return
-	}
-
-	decryptedBytes, e = aesDecrypt(aesKey, ciphertext)
-	if e != nil {
-		return
-	}
-
-	return
-}
-
-func deriveKeyInDecrypt(privKey *ecdh.PrivateKey, pubKeyFileBytes []byte) (aesKey []byte, ciphertext []byte, e *utils.Error) {
-	// ecdh
-	if len(pubKeyFileBytes) <= 1+publicKeyLength || pubKeyFileBytes[0] != publicKeyLength {
-		e = utils.ErrInvalidPublicKey().WithParam("length", len(pubKeyFileBytes))
-		mlog.Error(e.String())
-		return
-	}
-
-	pubKeyBytes := pubKeyFileBytes[1 : 1+publicKeyLength]
-	ciphertext = pubKeyFileBytes[1+publicKeyLength:]
-
-	pubKey, err := utils.Curve().NewPublicKey(pubKeyBytes)
-	if err != nil {
-		e = utils.ErrInvalidPublicKey().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	sharedKey, err := privKey.ECDH(pubKey)
-	if err != nil {
-		e = utils.ErrECDH().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	// kdf
-	aesKey, err = hkdf.Key(sha256.New, sharedKey, []byte(salt), info, deriveKeyLength)
-	if err != nil {
-		e = utils.ErrKDF().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	return
-}
-
-func aesDecrypt(aesKey []byte, ciphertext []byte) (decryptedBytes []byte, e *utils.Error) {
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		e = utils.ErrAESNewCipher().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	aesGCM, err := cipher.NewGCMWithRandomNonce(block)
-	if err != nil {
-		e = utils.ErrAESNewGCM().WithCause(err)
-		mlog.Error(e.String())
-		return
-	}
-
-	decryptedBytes, err = aesGCM.Open(nil, nil, ciphertext, nil)
-	if err != nil {
-		e = utils.ErrAESDecrypt().WithCause(err)
-		mlog.Error(e.String())
-		return
 	}
 
 	return

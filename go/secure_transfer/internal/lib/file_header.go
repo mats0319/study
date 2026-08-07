@@ -26,7 +26,8 @@ func NewFileHeader(encMethod utils.EncryptMethod) *FileHeader {
 }
 
 func (fh *FileHeader) Serialize() (fhBytes []byte, e *utils.Error) {
-	if fh.canSerialize() != nil {
+	e = fh.canSerialize()
+	if e != nil {
 		return
 	}
 
@@ -61,25 +62,29 @@ func (fh *FileHeader) Deserialize(encFile string) (e *utils.Error) {
 	}
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
+	reader := bufio.NewReaderSize(file, utils.FrameSize*2)
 
 	fileHeaderLen := make([]byte, 1)
-	_, err = reader.Read(fileHeaderLen)
-	if err != nil {
-		e = utils.ErrReadFile().WithCause(err)
-		mlog.Error(e.String())
-		return
+	_, e = readExact(reader, fileHeaderLen)
+	if e != nil {
+		return e
 	}
 
 	data := make([]byte, fileHeaderLen[0])
-	_, err = reader.Read(data)
-	if err != nil {
-		e = utils.ErrReadFile().WithCause(err)
+	n, e := readExact(reader, data)
+	if e != nil {
+		return
+	}
+	if n != int(fileHeaderLen[0]) {
+		e = utils.ErrFileHeader().
+			WithParam("length", n).
+			WithParam("want", fileHeaderLen[0])
 		mlog.Error(e.String())
 		return
 	}
 
-	if fh.canDeserialize(data) != nil {
+	e = fh.canDeserialize(data)
+	if e != nil {
 		return
 	}
 

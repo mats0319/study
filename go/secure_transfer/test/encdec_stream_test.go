@@ -6,8 +6,8 @@ import (
 	"github.com/mats0319/secure_transfer/internal"
 )
 
-func TestEncDecOnce(t *testing.T) {
-	err := generateRandomFile("message.txt", 1)
+func TestEncDecStream(t *testing.T) {
+	err := generateRandomFile("message.txt", 100)
 	if err != nil {
 		t.Error(err)
 		return
