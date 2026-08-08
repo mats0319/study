@@ -1,1 +1,4 @@
 **/*/target/
+
+crypto/testdata/
+crypto/benches/testdata/

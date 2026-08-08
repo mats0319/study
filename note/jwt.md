@@ -1,19 +1,15 @@
 # JWT学习笔记
 
-JWT：json web token[RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519)，
-是一种客户端与服务端之间确认身份的方案，此方案中服务端不保存状态信息
+JWT：json web token[RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519)， 是一种客户端与服务端之间确认身份的方案，此方案中服务端不保存状态信息
 
-jwt分为两种：JWS(sign，RFC 7515)和JWE(encrypt，RFC 7516)，它们在格式上相似，JWE更复杂一些，所以我们用JWS举例
+jwt分为两种：JWS (JW sign，RFC 7515)和JWE (JW encrypt，RFC 7516)，它们在格式上相似，JWE更复杂一些，所以我们用JWS举例
 
-服务端在通过验证后（例如验证密码），构造并向客户端发送一个token，
-客户端每次向服务端发送请求时携带该token，服务端验证token（验签或解密）并认为token携带的数据是可信的。
+服务端在通过验证后（例如验证密码），构造并向客户端发送一个token， 客户端每次向服务端发送请求时携带该token，服务端验证token（验签或解密）并认为token携带的数据是可信的。
 
 ## JWT的结构
 
-e.g.（换行符仅用作展示）
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
-SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+e.g.（换行符仅用作展示） eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ. SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 
 上方JWT前两段的明文为：
 `{"alg":"HS256","typ":"JWT"}.{"sub":"1234567890","name":"John Doe","iat":1516239022}`
