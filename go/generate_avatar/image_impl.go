@@ -54,9 +54,7 @@ func NewImageImpl(text string, size int) (*ImageImpl, error) {
 }
 
 func (i *ImageImpl) ColorModel() color.Model {
-	return color.ModelFunc(func(c color.Color) color.Color {
-		return c
-	})
+	return color.ModelFunc(func(c color.Color) color.Color { return c })
 }
 
 func (i *ImageImpl) Bounds() image.Rectangle {
@@ -104,7 +102,7 @@ func calcBlockPosition(v int, size int) int {
 }
 
 func parseColor(str string) (color.RGBA, error) {
-	if len(str) != 4 { // 函数外
+	if len(str) != 4 {
 		return color.RGBA{}, errors.New("invalid color str")
 	}
 

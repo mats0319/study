@@ -1,5 +1,9 @@
 # dart 官方文档阅读笔记
 
+[dart doc](https://dart.cn/language)
+
+flutter是一个框架，即使在一个flutter项目中，我们写的也是dart代码，flutter只是把它认识的部分翻译成了UI
+
 ## 变量
 
 使用`var name="mario"`或`String name="mario"`定义变量，有类型推断也可以指定

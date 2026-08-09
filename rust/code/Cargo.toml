@@ -1,0 +1,10 @@
+[package]
+name = "code"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rand = "0.10.2"
+regex = "1.13.0"
+trpl = "0.3.0"
+futures = { version = "0.3.33", features = ["thread-pool"] }

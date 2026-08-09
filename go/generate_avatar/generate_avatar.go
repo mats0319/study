@@ -44,7 +44,7 @@ func GenerateAvatar(text string, size int) error {
 	if len(fileName) > 8 {
 		fileName = fileName[:8]
 	}
-	fileName = fmt.Sprintf("./img/%s_%d.png", fileName, size)
+	fileName = fmt.Sprintf("./images/%s_%d.png", fileName, size)
 
 	return os.WriteFile(fileName, imageBytes, 0777)
 }

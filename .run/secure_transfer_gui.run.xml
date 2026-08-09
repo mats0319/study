@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="secure_transfer_gui" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="study" />
+    <working_directory value="$PROJECT_DIR$/go/secure_transfer/cmd/gui/sample/" />
+    <kind value="PACKAGE" />
+    <package value="github.com/mats0319/secure_transfer/cmd/gui" />
+    <directory value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/go/secure_transfer/cmd/gui/sample/" />
+    <auto_managed_config_id value="$PROJECT_DIR$/go/secure_transfer/cmd/gui" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,49 +1,15 @@
 package doc
 
 import (
-	"sync"
+	"fmt"
 	"testing"
 )
 
-type Locked[T any] struct {
-	mu sync.Mutex
-	v  T
-}
-
-func NewLocked[T any](value T) *Locked[T] {
-	return &Locked[T]{v: value}
-}
-
-func (l *Locked[T]) Get() T {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	return l.v
-}
-
-func (l *Locked[T]) Set(value T) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.v = value
-}
-
 func TestGoWeekly(t *testing.T) {
-	for range 5 {
-		counter := NewLocked(0)
+	array := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-		wg := sync.WaitGroup{}
+	slice := array[2:5]
+	slice2 := append(slice, 100)
 
-		for range 10 {
-			wg.Go(func() {
-				for range 1000 {
-					v := counter.Get()
-					v++
-					counter.Set(v)
-				}
-			})
-		}
-
-		wg.Wait()
-
-		t.Log(counter.Get())
-	}
+	fmt.Println(array, len(slice), cap(slice), len(slice2), cap(slice2))
 }

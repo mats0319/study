@@ -1,16 +1,17 @@
 # flutter
 
-## 打包和安装
+[flutter doc](https://docs.flutter.cn/install/quick)
+[flutter实战](https://book.flutterchina.club)
+[flutter codelab](https://codelabs.developers.google.com/codelabs/flutter-codelab-first?hl=zh-cn#0)
 
-`flutter build appbundle`
-`flutter build apk --split-per-abi`
-`flutter install --use-application-binary=build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
+## 常用命令
 
-查看手机cpu架构：（需要手机开启usb调试）
-`adb shell getprop | grep cpu`
-
-注：不要像flutter文档中提到的，直接使用`flutter install`，因为默认会下载`app-release.apk`，
-只有当你将所有架构的包都打在一起的时候（`build`不使用`--split-per-abi`参数），这样做才符合预期
+- `flutter build appbundle`
+- `flutter build apk --split-per-abi`
+- `flutter install --use-application-binary=build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
+    - 不要像flutter文档中提到的，直接使用`flutter install`，因为默认会下载`app-release.apk`，
+      只有当你将所有架构的包都打在一起的时候（`build`不使用`--split-per-abi`参数），这样做才符合预期
+- `adb shell getprop | grep cpu` 查看手机cpu架构：（需要手机开启usb调试）
 
 ## codelab
 
@@ -18,8 +19,9 @@ flutter文档中提供了一个codelab，完成之后对flutter编程有了一�
 
 - 在使用过程中大概了解了哪些Widget有长宽、padding/margin等字段可以设置
 - 用flutter写样式整体上比起使用html+css更容易
-    - 举个例子：html style会覆盖class。类似的还有很多，总的来说，当你写html的时候，很容易*写了居中但是没有居中*
-    - flutter把样式封装的更好，基本上可以做到所见即所得
+    - 举个例子：html style会覆盖class、css !important又会覆盖style。
+      类似的还有很多，总的来说，当你写html的时候，很容易*写了居中但是没有居中*，
+      flutter把样式封装的很好，基本上可以做到所见即所得
 
 ## 技术点
 

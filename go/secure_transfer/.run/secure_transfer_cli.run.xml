@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="secure_transfer_cli" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="study" />
+    <working_directory value="$PROJECT_DIR$/go/secure_transfer/cmd/cli/sample" />
+    <kind value="DIRECTORY" />
+    <package value="github.com/mats0319/study/go/secure_transmission" />
+    <directory value="$PROJECT_DIR$/go/secure_transfer/cmd/cli" />
+    <filePath value="$PROJECT_DIR$/go/encrypt_transmission/main.go" />
+    <output_directory value="$PROJECT_DIR$/go/secure_transfer/cmd/cli/sample" />
+    <method v="2" />
+  </configuration>
+</component>

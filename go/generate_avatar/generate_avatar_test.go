@@ -9,23 +9,21 @@ import (
 func TestGenerateAvatar(t *testing.T) {
 	testCase := []string{
 		"mario",
-		"Mario",
 		"mats0319",
+		"avatar",
 	}
 
 	// 'rm -rf' out dir
-	err := os.RemoveAll("./img/")
-	if err != nil {
+	if err := os.RemoveAll("./images/"); err != nil {
 		t.Error("empty out dir failed, error: ", err)
 	}
 
-	err = os.MkdirAll("./img/", 0777)
-	if err != nil {
+	if err := os.MkdirAll("./images/", 0777); err != nil {
 		t.Error("'mkdir' on out dir failed, error: ", err)
 	}
 
 	for i := range testCase {
-		err = GenerateAvatar(testCase[i], rand.IntN(5)+3) // [3,7]
+		err := GenerateAvatar(testCase[i], rand.IntN(5)+3) // [3,7]
 		if err != nil {
 			t.Error("generate avatar failed, error:", err)
 		}

@@ -1,5 +1,7 @@
 # kotlin
 
+## 变量首先要可以变
+
 val: 常量
 var: 变量
 
@@ -8,15 +10,16 @@ kotlin很重视变量是否可修改，包括集合里默认创建的都是只�
 ## 基本类型
 
 整型: Byte Short Int Long (var year: Int = 2026)
+
 - 长度分别为8/16/32/64 bits
 - 支持`0x0F`/`0b01`，不支持8进制数字类型字面量
-无符号整型: UByte UShort UInt ULong (var score: UInt = 100u)
-浮点数: Float Double (var value: Float = 10.5f; var price: Double = 20.99)
-布尔类型: Boolean (var isAdmin: Boolean = true)
-字符类型: Char (var c: Char = '.')
-字符串: String (var str: String = "Hello !")
+  无符号整型: UByte UShort UInt ULong (`var score: UInt = 100u`)
+  浮点数: Float Double (`var value: Float = 10.5f; var price: Double = 20.99`)
+  布尔类型: Boolean (`var isAdmin: Boolean = true`)
+  字符类型: Char (`var c: Char = '.'`)
+  字符串: String (`var str: String = "Hello !"`)
 
-变量在使用前必须初始化，例如尝试打印一个没有初始化的变量会导致error(编译期错误)
+变量在使用前必须初始化，尝试打印一个没有初始化的变量会触发编译期错误
 
 ## 集合
 
@@ -62,8 +65,8 @@ kotlin很重视变量是否可修改，包括集合里默认创建的都是只�
 - 如果默认参数出现在参数列表中间、调用时又忽略了它，那么你应为后续所有参数命名
   `fun f(v1: Int = 0, v2: Int) {}  ->  f(v2=1)`
 - 可变数量参数：`fun f(vararg v: String) {}`->`f(v=arrayOf("a","b","c"))`
-  - 如果传的是数组（与函数声明中的变量类型不符），则需要在调用时为变量命名
-  - 如果该可变数量参数后面还有其他参数，其他参数需要在调用时命名
+    - 如果传的是数组（与函数声明中的变量类型不符），则需要在调用时为变量命名
+    - 如果该可变数量参数后面还有其他参数，其他参数需要在调用时命名
 
 函数体如果只有一行表达式，则函数可以简写成`fun sum(x:Int,y:Int):Int=x+y`，但还是为了兼顾其他语言使用习惯，通常不用
 
@@ -193,6 +196,7 @@ if (v is T1 || v is T2) {} // 此时会将v隐式转换成T1、T2的最近公共
 ```
 
 强制类型转换：`v as String`，通常看上去像是is的语法糖（类型转换），还可以**强制**转换，例如把父类实例强转成子类类型
+
 ```kotlin
 var v:Animal = Dog()
 var v2 = v as? Dog
