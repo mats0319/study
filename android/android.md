@@ -24,3 +24,14 @@
 - flutter自行渲染界面，如果遇到带有界面的原生功能（例如摄像头、地图、webview等）还需要协调原生界面和自己的界面
 
 所以现在让我写android app，我可能会选择`kotlin+jetpack compose`，因为它全栈都是kotlin语言。
+
+## jetpack compose
+
+[UI组件](https://developer.android.com/develop/ui/compose/components?hl=zh-cn)
+
+这一部分简单看几个例子，知道代码结构就可以开始写了，剩下的遇到了现翻手册或者代码
+
+- 页面框架：Scaffold（提供顶部栏、底部栏和悬浮按钮的标准结构）
+- 基础布局组件：Column、Row、Box
+- 基础显示组件：Text、Image、Card、Spacer
+- 交互与输入控件：Button、TextField、Checkbox、Switch
