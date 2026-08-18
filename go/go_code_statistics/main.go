@@ -24,8 +24,10 @@ func (sr *statisticalResult) traverseDir(dir string) {
 	}
 
 	for i := range entry {
-		if strings.HasPrefix(entry[i].Name(), ".") {
-			continue // ignore shadow files and folders, they usually not go files
+		if strings.HasPrefix(entry[i].Name(), ".") ||
+			strings.HasPrefix(entry[i].Name(), "_") {
+			// '.'开头表示linux隐藏文件，'_'开头表示不进行go代码分析，忽略这些文件
+			continue
 		}
 
 		name := mustDir(dir) + entry[i].Name()
