@@ -2,7 +2,6 @@ package utils
 
 const (
 	FileHeaderStart = "ST"
-	FileHeaderAAD   = "secure transfer aad"
 	DeriveKeyInfo   = "secure transfer derive key info"
 
 	PrivateKeyFileName = "priv.key"
@@ -18,7 +17,7 @@ const (
 	DeriveKeySaltLength = 16
 	AESBaseNonceLength  = 7 // aes-gcm nonce: 12 = 7 + 1 + 4
 	PublicKeyLength     = 32
-	FileHeaderAADLength = len(FileHeaderAAD)
+	FileHeaderAADLength = 32 // sha256 length
 
 	DeriveKeyLength = 32 // 32 Bytes, match AES-256
 

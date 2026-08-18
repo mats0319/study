@@ -35,7 +35,8 @@ func (e *Error) Error() string {
 		return ""
 	}
 
-	return fmt.Sprintf("error code: %d", e.Code)
+	return fmt.Sprintf("error code: %d, message: %s\nerr: %v\nparams: %#v",
+		e.Code, e.Message, e.Cause, e.Params)
 }
 
 // String print all details, use in server log

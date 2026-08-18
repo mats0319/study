@@ -7,18 +7,9 @@ import (
 
 var handler *Handler
 
-func DefaultLogger() *slog.Logger {
-	h, err := defaultHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	return slog.New(h)
-}
-
-func Initialize() {
+func Initialize(writeFlag int) {
 	var err error
-	handler, err = newHandler("log.log", 1)
+	handler, err = NewHandler(writeFlag)
 	if err != nil {
 		log.Fatalln("open log file failed, error:", err)
 	}

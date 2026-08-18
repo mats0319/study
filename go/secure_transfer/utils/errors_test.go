@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+var ErrForTest = newError(-1, "test error string")
+
 func TestLogStyle(t *testing.T) {
 	e := ErrForTest().WithCause(errors.New("a new error")).
 		WithParam("first param", "first value").

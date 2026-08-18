@@ -14,16 +14,6 @@ func printResult(message string, err error) {
 	}
 }
 
-func boolToString(b bool) (res string) {
-	if b {
-		res = "Success"
-	} else {
-		res = "Failed"
-	}
-
-	return
-}
-
 func isFileExist(fullName string, mainName string) (hasSpecFile bool, hasFuzzFile bool) {
 	entry, err := os.ReadDir("./")
 	if err != nil {

@@ -40,6 +40,7 @@ func Encrypt() error {
 
 	e = enc.Encrypt(originFileName, encFileName)
 	if e != nil {
+		_ = os.Remove(encFileName) // 删除可能存在的半截文件
 		return e
 	}
 

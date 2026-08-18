@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -10,6 +11,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/mats0319/secure_transfer/internal"
 )
+
+var encryptLock atomic.Bool
 
 func makeSenderContent() *fyne.Container {
 	titleText := widget.NewLabel("> Sender:")
@@ -44,8 +47,16 @@ func makeSenderContent() *fyne.Container {
 			return
 		}
 
-		err := internal.Encrypt()
-		printResult("Encrypt", err)
+		// avoid UI goroutine blocked
+		go func() {
+			if !encryptLock.CompareAndSwap(false, true) {
+				return
+			}
+			defer encryptLock.Store(false)
+
+			err := internal.Encrypt()
+			fyne.Do(func() { printResult("Encrypt", err) })
+		}()
 	})
 
 	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)

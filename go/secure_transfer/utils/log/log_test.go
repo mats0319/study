@@ -8,21 +8,28 @@ import (
 )
 
 func TestCustomLog(t *testing.T) {
-	Initialize()
+	Initialize(W_File)
 	defer Close()
 
-	logger := DefaultLogger().WithGroup("group1").WithGroup("group2")
+	h, e := NewHandler(W_Stdout)
+	if e != nil {
+		t.Fatal(e)
+	}
+	logger := slog.New(h).WithGroup("group1").WithGroup("group2")
 
-	Log(logger, slog.LevelDebug, "log msg",
-		slog.Int("key1", 10),
-		slog.String("key2", "value2"),
-	)
+	{
+		Debug("log msg", slog.String("key", "value"))
+		Log(logger, slog.LevelDebug, "log msg",
+			slog.Int("key1", 10),
+			slog.String("key2", "value2"),
+		)
+	}
 
-	// 结论：双写测试成功，可以根据需要写入日志文件或写入默认输出
+	// 结论：双写测试成功，可以根据需要写入日志文件或默认输出，可以为文件/命令行写入不同内容
 }
 
 func TestLogLevel(t *testing.T) {
-	Initialize()
+	Initialize(W_Stdout)
 	defer Close()
 
 	Debug("debug level log", slog.Any("error", errors.New("debug error")))
@@ -32,7 +39,7 @@ func TestLogLevel(t *testing.T) {
 }
 
 func TestLogSplitFile(t *testing.T) {
-	Initialize()
+	Initialize(W_File)
 	defer Close()
 
 	lastSize := handler.Size

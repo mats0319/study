@@ -22,32 +22,15 @@ var _ slog.Handler = (*Handler)(nil)
 
 var bufferPool = sync.Pool{New: func() any { return new(bytes.Buffer) }} // 减少GC抖动
 
-func defaultHandler() (*Handler, error) {
+func NewHandler(writeFlag int) (*Handler, error) {
 	h := &Handler{
-		HandlerWriter: &HandlerWriter{WriterFlag: w_File | w_Stdout},
+		HandlerWriter: &HandlerWriter{WriterFlag: writeFlag},
 		Level:         slog.LevelDebug,
 		Attrs:         []slog.Attr{},
 		Groups:        []string{},
 	}
 
-	err := h.HandlerWriter.New("log.log", 1<<20)
-	if err != nil {
-		return nil, err
-	}
-
-	return h, nil
-}
-
-func newHandler(fileName string, maxSize int64) (*Handler, error) {
-	h := &Handler{
-		HandlerWriter: &HandlerWriter{WriterFlag: w_File},
-		Level:         slog.LevelDebug,
-		Attrs:         []slog.Attr{},
-		Groups:        []string{},
-	}
-
-	maxSize = maxSize << 20 // unit: MB
-	err := h.HandlerWriter.New(fileName, maxSize)
+	err := h.HandlerWriter.New("log.log", 10<<20) // 10M
 	if err != nil {
 		return nil, err
 	}

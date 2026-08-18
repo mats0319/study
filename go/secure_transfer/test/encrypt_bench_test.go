@@ -22,22 +22,19 @@ const (
 )
 
 func BenchmarkEncryptSameFile(b *testing.B) {
-	err := generateRandomFile("message.txt", 1024)
+	err := generateRandomFile("message.txt", 200)
 	if err != nil {
-		b.Error(err)
-		return
+		b.Fatal(err)
 	}
 
-	err = internal.GenerateKeyPair()
+	err = internal.GenerateKeyPair(true)
 	if err != nil {
-		b.Error(err)
-		return
+		b.Fatal(err)
 	}
 
 	pubKey, e := deserializePublicKey()
 	if e != nil {
-		b.Error(e)
-		return
+		b.Fatal(err)
 	}
 
 	b.Run("Encrypt Once", func(b *testing.B) {
@@ -46,8 +43,7 @@ func BenchmarkEncryptSameFile(b *testing.B) {
 			enc := lib.NewEncryptorOnce(pubKey)
 			err := enc.Encrypt(originFileName, encFileName_Once)
 			if err != nil {
-				b.Error(err)
-				return
+				b.Fatal(err)
 			}
 		}
 	})
@@ -58,8 +54,7 @@ func BenchmarkEncryptSameFile(b *testing.B) {
 			enc := lib.NewEncryptorStream(pubKey)
 			err := enc.Encrypt(originFileName, encFileName_Stream)
 			if err != nil {
-				b.Error(err)
-				return
+				b.Fatal(err)
 			}
 		}
 	})

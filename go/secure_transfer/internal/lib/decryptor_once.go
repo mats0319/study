@@ -123,10 +123,11 @@ func (dec *decryptorOnce) getCiphertext(encFile string) (ciphertext []byte, e *u
 	if e != nil {
 		return
 	}
-	if dec.encFileSize < n {
+	if dec.encFileSize < n || dec.encFileSize > utils.OnceEncMaxSize {
 		e = utils.ErrEncryptedFile().
 			WithParam("length", dec.encFileSize).
-			WithParam("header length", n)
+			WithParam("header length", n).
+			WithParam("max length", utils.OnceEncMaxSize)
 		mlog.Error(e.String())
 		return
 	}

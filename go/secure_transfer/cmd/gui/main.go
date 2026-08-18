@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	mlog.Initialize()
+	mlog.Initialize(mlog.W_File)
 	defer mlog.Close()
 
 	a := app.NewWithID("Secure Transfer") // 不链式调用下去，因为a可以创建多个window

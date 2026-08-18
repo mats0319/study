@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	w_Stdout = 1 << iota
-	w_File
+	W_Stdout = 1 << iota
+	W_File
 )
 
 type HandlerWriter struct { // only one instance
@@ -33,7 +33,7 @@ func (hw *HandlerWriter) New(fileName string, maxSize int64) (err error) {
 		err = errors.New("nil HandlerWriter")
 		return
 	}
-	if hw.WriterFlag == w_Stdout {
+	if hw.WriterFlag == W_Stdout {
 		hw.Writer = os.Stdout
 		return
 	}
@@ -52,10 +52,10 @@ func (hw *HandlerWriter) New(fileName string, maxSize int64) (err error) {
 	}
 
 	writers := make([]io.Writer, 0)
-	if hw.WriterFlag&w_File > 0 {
+	if hw.WriterFlag&W_File > 0 {
 		writers = append(writers, fileIns)
 	}
-	if hw.WriterFlag&w_Stdout > 0 {
+	if hw.WriterFlag&W_Stdout > 0 {
 		writers = append(writers, os.Stdout)
 	}
 
