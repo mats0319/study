@@ -1,70 +1,73 @@
 package mlog
 
 import (
+	"errors"
 	"io"
 	"log"
 	"os"
 	"sync"
 )
 
+const fileName = "log.log"
+
 type handlerWriter struct {
-	writeFlag writeFlag // write to logfile and/or Stdout
+	writerFlag writerFlag // write to 'logfile' and/or 'Stdout'
 
 	writer io.Writer
 	mu     sync.Mutex
 
 	// 'W_File'
-	fileIns *os.File
+	file *fileRef
 }
 
-func newHandlerWriter(wf writeFlag) (hw *handlerWriter) {
+func newHandlerWriter(wf writerFlag) (*handlerWriter, error) {
 	if wf <= 0 {
-		log.Println("invalid write flag")
-		os.Exit(1)
+		log.Println("invalid writer flag: ", wf)
+		return nil, errors.New("invalid writer flag")
 	}
 
-	hw = &handlerWriter{writeFlag: wf}
+	hw := &handlerWriter{writerFlag: wf}
 
 	writers := make([]io.Writer, 0, 2)
-	if hw.writeFlag&W_File > 0 {
-		// 检查：此处的文件句柄应在程序退出前关闭（调用mlog.Close()），参考测试代码
-		fileIns, err := os.OpenFile("log.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if wf&W_File > 0 {
+		ref, err := getFileRef(fileName)
 		if err != nil {
 			log.Println("open log file failed, error:", err)
-			os.Exit(1)
+			return nil, err
 		}
 
-		hw.fileIns = fileIns
-
-		writers = append(writers, fileIns)
+		hw.file = ref
+		writers = append(writers, ref.f)
 	}
-	if hw.writeFlag&W_Stdout > 0 {
+	if wf&W_Stdout > 0 {
 		writers = append(writers, os.Stdout)
 	}
 
-	if len(writers) == 1 {
+	switch len(writers) {
+	case 1:
 		hw.writer = writers[0]
-	} else { // > 1
+	case 2:
 		hw.writer = io.MultiWriter(writers...)
 	}
 
-	return
+	return hw, nil
 }
 
-func (hw *handlerWriter) Write(logBytes []byte) (err error) {
+func (hw *handlerWriter) Write(log []byte) (err error) {
 	hw.mu.Lock()
 	defer hw.mu.Unlock()
 
-	_, err = hw.writer.Write(logBytes)
-	if err != nil {
-		return
-	}
+	_, err = hw.writer.Write(log)
 
 	return
 }
 
 func (hw *handlerWriter) close() {
-	if hw != nil {
-		_ = hw.fileIns.Close()
+	hw.mu.Lock()
+	defer hw.mu.Unlock()
+
+	if hw.file != nil {
+		hw.file.close()
+		hw.file = nil
 	}
 }

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"log/slog"
-	"runtime"
-	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -22,13 +19,18 @@ var _ slog.Handler = (*handler)(nil)
 
 var bufferPool = sync.Pool{New: func() any { return new(bytes.Buffer) }} // 避免反复创建新的buffer
 
-func newHandler(wf writeFlag, level slog.Level) *handler {
+func newHandler(wf writerFlag, level slog.Level) (*handler, error) {
+	hw, err := newHandlerWriter(wf)
+	if err != nil {
+		return nil, err
+	}
+
 	return &handler{
-		handlerWriter: newHandlerWriter(wf),
+		handlerWriter: hw,
 		level:         level,
 		attrs:         []slog.Attr{},
 		groups:        []string{},
-	}
+	}, nil
 }
 
 func (h *handler) Enabled(_ context.Context, level slog.Level) bool {
@@ -40,7 +42,7 @@ func (h *handler) Handle(_ context.Context, r slog.Record) error {
 	buf.Reset()
 	defer bufferPool.Put(buf)
 
-	// structure: `[Time] [Level] [a/b.go:10] log message | k1=v1 g.k2=v2`
+	// structure: `[Time] [Level] [xxx/xx.go:10] log message | g.k1=v1 g.k2=v2`
 	buf.WriteByte('[')
 	buf.WriteString(r.Time.Format("2006-01-02 15:04:05.000"))
 	buf.WriteString("] [")
@@ -93,27 +95,6 @@ func (h *handler) WithGroup(name string) slog.Handler {
 	return newInstance
 }
 
-func codePosition(buf *bytes.Buffer) {
-	pc := make([]uintptr, 1)
-	runtime.Callers(6, pc)
-
-	fs := runtime.CallersFrames(pc)
-	f, _ := fs.Next()
-
-	fileName := f.File
-	lastIndex := strings.LastIndex(fileName, "/")
-	if lastIndex >= 0 {
-		index := strings.LastIndex(fileName[:lastIndex], "/")
-		if index >= 0 {
-			fileName = fileName[index+1:]
-		}
-	}
-
-	buf.WriteString(fileName)
-	buf.WriteByte(':')
-	buf.WriteString(strconv.Itoa(f.Line))
-}
-
 func (h *handler) logAttrs(buf *bytes.Buffer, r slog.Record) {
 	if len(h.attrs) == 0 && r.NumAttrs() == 0 {
 		return
@@ -122,22 +103,23 @@ func (h *handler) logAttrs(buf *bytes.Buffer, r slog.Record) {
 	buf.WriteString(" |")
 
 	for _, attr := range h.attrs {
-		buf.WriteByte(' ')
-		buf.WriteString(attr.Key)
-		buf.WriteByte('=')
-		buf.WriteString(attr.Value.String())
+		writeAttr(buf, attr, h.groups)
 	}
 
 	r.Attrs(func(attr slog.Attr) bool {
-		buf.WriteByte(' ')
-		for _, v := range h.groups {
-			buf.WriteString(v)
-			buf.WriteByte('.')
-		}
-		buf.WriteString(attr.Key)
-		buf.WriteByte('=')
-		buf.WriteString(attr.Value.String())
+		writeAttr(buf, attr, h.groups)
 
 		return true
 	})
+}
+
+func writeAttr(buf *bytes.Buffer, attr slog.Attr, groups []string) {
+	buf.WriteByte(' ')
+	for _, v := range groups {
+		buf.WriteString(v)
+		buf.WriteByte('.')
+	}
+	buf.WriteString(attr.Key)
+	buf.WriteByte('=')
+	buf.WriteString(attr.Value.String())
 }
