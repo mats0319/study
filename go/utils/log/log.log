@@ -1,0 +1,32 @@
+[2026-08-27 16:06:08.524] [INFO] [log/main.go:22] > Log init.
+[2026-08-27 16:06:08.524] [DEBUG] [log/log_test.go:13] debug level log | error=debug error
+[2026-08-27 16:06:08.524] [INFO] [log/log_test.go:14] info level log
+[2026-08-27 16:06:08.524] [WARN] [log/log_test.go:15] warn level log
+[2026-08-27 16:06:08.524] [ERROR] [log/log_test.go:16] error level log | error=error
+[2026-08-27 16:11:57.626] [INFO] [log/handler.go:116] > Log init.
+[2026-08-27 16:14:19.580] [DEBUG] [log/handler.go:116] debug level log | error=debug error
+[2026-08-27 16:14:55.980] [INFO] [log/handler.go:116] info level log
+[2026-08-27 16:17:30.320] [WARN] [log/handler.go:116] warn level log
+[2026-08-27 16:17:30.320] [ERROR] [log/handler.go:116] error level log | error=error
+[2026-08-27 16:17:30.801] [INFO] [testing/testing.go:2036] > Log init.
+[2026-08-27 16:18:54.435] [DEBUG] [testing/testing.go:2036] debug level log | error=debug error
+[2026-08-27 16:19:18.071] [INFO] [testing/testing.go:2036] info level log
+[2026-08-27 16:19:18.071] [WARN] [testing/testing.go:2036] warn level log
+[2026-08-27 16:19:18.071] [ERROR] [testing/testing.go:2036] error level log | error=error
+[2026-08-27 16:26:17.167] [INFO] [] > Log init.
+[2026-08-27 16:27:48.349] [DEBUG] [] debug level log | error=debug error
+[2026-08-27 16:27:48.349] [INFO] [] info level log
+[2026-08-27 16:27:48.349] [WARN] [] warn level log
+[2026-08-27 16:27:48.349] [ERROR] [] error level log | error=error
+[2026-08-27 16:27:48.814] [INFO] [] > Log init.
+[2026-08-27 16:28:43.100] [DEBUG] [] debug level log | error=debug error
+[2026-08-27 16:28:43.100] [INFO] [] info level log
+[2026-08-27 16:28:43.100] [WARN] [] warn level log
+[2026-08-27 16:28:43.100] [ERROR] [] error level log | error=error
+[2026-08-27 16:28:51.951] [INFO] [] > Log init.
+[2026-08-27 16:30:26.528] [DEBUG] [] debug level log | error=debug error
+[2026-08-27 16:44:27.458] [INFO] [] info level log
+[2026-08-27 16:44:27.458] [WARN] [] warn level log
+[2026-08-27 16:44:27.458] [ERROR] [] error level log | error=error
+[2026-08-27 16:45:20.579] [INFO] [log/main.go:22] > Log init.
+[2026-08-27 16:45:20.579] [INFO] [log/log_test.go:33] default logger

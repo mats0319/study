@@ -7,34 +7,24 @@ import (
 
 func TestGenerateRandomSlice(t *testing.T) {
 	for range 3 {
-		fmt.Println(GenerateRandomSlice[int](10, 10))
-		fmt.Println(GenerateRandomSlice[float64](10, 10.0))
+		fmt.Println(GenerateRandomSlice[int](10, 20))
+		fmt.Println(GenerateRandomSlice[float64](10, 20.0))
 	}
 
-	// [8 5 6 -7 -6 -5 2 7 9 -6]
-	// [0.65 -4.45 8.539 -2.607 1.322 5.526 7.381 5.125 -2.186 -1.234]
-	// [5 2 -7 7 -4 0 -3 -1 8 -3]
-	// [-9.507 2.702 3.012 -1.703 -6.763 4.521 -7.792 3.381 -0.714 6.662]
-	// [3 -1 -4 -5 -3 4 -2 -1 -8 -9]
-	// [6.961 2.952 -7.435 9.487 5.468 -0.123 -4.897 8.305 4.765 -6.441]
+	// [-13 4 7 -4 -15 12 -9 4 -8 0]
+	// [4.662 14.249 -19.734 14.437 -8.219 -11.027 -0.751 -2.469 7.318 17.657]
+	// [18 15 14 16 -9 -12 16 -18 19 18]
+	// [4.937 6.893 -13.351 19.661 -6.618 -2.81 -14.096 5.774 -10.319 -10.349]
+	// [-10 9 -14 1 -2 2 -1 8 5 -16]
+	// [15.717 -11.257 17.042 -14.607 -16.935 -7.369 -2.736 9.796 -11.652 -0.121]
 }
 
-func TestGenerateRandomBytes_CharacterLibraryIndex(t *testing.T) {
+func TestGenerateRandomBytes(t *testing.T) {
 	for range 3 {
-		fmt.Println(string(GenerateRandomBytes_CharacterLibraryIndex(20)))
+		fmt.Println(string(GenerateRandomBytes(32)))
 	}
 
-	//kTGIilO7A3j8OMqPV7lp
-	//b4dAz7JLxqgChukX7ooa
-	//bA8qe0CM7KMtf3LWvqIo
-}
-
-func TestGenerateRandomBytes_BytesEncode(t *testing.T) {
-	for range 3 {
-		fmt.Println(GenerateRandomBytes_BytesEncode(20))
-	}
-
-	//333dfd1117f5750a0091
-	//eeaf6f8d0768a912dc6a
-	//367b22de69e3972e6c5f
+	//ZZSABFOJNES3TMKGVOKZMGXFNS7L6YXW
+	//PMWLBXHFEBBVHBK7K5EUMCDMJ7NICQRI
+	//4WGAIU4FKYLQOFB337ZMXFASQ3DPKLUK
 }
