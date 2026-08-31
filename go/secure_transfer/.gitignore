@@ -1,15 +1,11 @@
-cmd/cli/build/
-cmd/cli/sample/secure_transfer_cli
-cmd/cli/sample/secure_transfer_cli.exe
-cmd/cli/sample/log.log
-
-cmd/gui/build/
-cmd/gui/sample/secure_transfer_gui
-cmd/gui/sample/secure_transfer_gui.exe
-cmd/gui/sample/log.log
-
-utils/log/log.log
-utils/log/*.log.gz
+# cmd/cli/ & cmd/gui/
+cmd/**/build/
+cmd/**/sample/*
+!cmd/**/sample/priv.key
+!cmd/**/sample/PUB.KEY
+!cmd/**/sample/message.txt
+!cmd/**/sample/CIPHER.TXT
+!cmd/**/sample/message_decrypted.txt
 
 test/*
 !test/*.go

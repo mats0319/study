@@ -81,8 +81,15 @@ func (sr *statisticalResult) print() {
 }
 
 func main() {
+	workDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	log.Println("> Work Directory: ", workDir)
+	log.Println()
+
 	counterIns := &statisticalResult{}
-	counterIns.traverseDir("./")
+	counterIns.traverseDir(workDir)
 	counterIns.print()
 }
 

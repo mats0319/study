@@ -6,7 +6,7 @@
 
 ```cmd
 go install
-go_code_statistics
+goCodeStatistics
 ```
 
 目前仅支持通过切换目录执行命令的方式改变检查路径，以下是一个运行结果示例：

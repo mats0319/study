@@ -1,3 +1,3 @@
-module github.com/mats0319/study/go/go_code_statistics
+module github.com/mats0319/study/go/goCodeStatistics
 
 go 1.16

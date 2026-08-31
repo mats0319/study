@@ -57,13 +57,12 @@ func FirstFile(fileBaseName string) (fileName string, fileSize int64, e *Error) 
 func GenerateRandomBytes(length int) []byte {
 	bytesBuilder := bytes.NewBuffer(nil)
 
-	l := length
-	for l > 0 {
-		_, _ = bytesBuilder.WriteString(rand.Text()) // err always nil
-		l -= 26
+	for l := 0; l < length; {
+		n, _ := bytesBuilder.WriteString(rand.Text()) // err always nil
+		l += n
 	}
 
-	return []byte(bytesBuilder.String())[:length]
+	return bytesBuilder.Bytes()[:length]
 }
 
 func CalcSHA256(data []byte) []byte {
