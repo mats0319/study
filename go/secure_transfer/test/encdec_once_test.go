@@ -9,36 +9,31 @@ import (
 func TestEncDecOnce(t *testing.T) {
 	err := generateRandomFile("message.txt", 1)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
-	err = internal.GenerateKeyPair()
+	err = internal.GenerateKeyPair(true)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	err = internal.Encrypt()
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	t.Log("> Encrypt Success.")
 
 	err = internal.Decrypt()
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	t.Log("> Decrypt Success.")
 
 	isEqual, err := compareFile(t, "message.txt", "message_decrypted.txt")
 	if err != nil || !isEqual {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	t.Log("> File Hash Matched, Test Passed.")

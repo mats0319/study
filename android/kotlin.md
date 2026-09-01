@@ -1,217 +1,301 @@
-# kotlin
+# kotlin 学习笔记
 
-## 变量首先要可以变
+参考资料：（上次学习时间：2026.8）
 
-val: 常量
-var: 变量
+- [kotlin tour (beginner + intermediate)](https://kotlinlang.org/docs/kotlin-tour-hello-world.html)
+- [kotlin语言指南](https://kotlinlang.org/docs/types-overview.html)
 
-kotlin很重视变量是否可修改，包括集合里默认创建的都是只读的实例、想要创建可编辑的实例需要更复杂的初始化函数。
+## 定义和打印变量
 
-## 基本类型
+- val：只读变量，赋初始值后不可更改（建议默认使用该类型，除非确实有修改需要 (?)）
+- var：可变变量
 
-整型: Byte Short Int Long (var year: Int = 2026)
-
-- 长度分别为8/16/32/64 bits
-- 支持`0x0F`/`0b01`，不支持8进制数字类型字面量
-  无符号整型: UByte UShort UInt ULong (`var score: UInt = 100u`)
-  浮点数: Float Double (`var value: Float = 10.5f; var price: Double = 20.99`)
-  布尔类型: Boolean (`var isAdmin: Boolean = true`)
-  字符类型: Char (`var c: Char = '.'`)
-  字符串: String (`var str: String = "Hello !"`)
-
-变量在使用前必须初始化，尝试打印一个没有初始化的变量会触发编译期错误
-
-## 集合
-
-- Lists：列表
-    - 只读列表：`var readOnlyList: List<Int> = listOf(1,2,3)`
-    - 可变列表：`var mutableList: MutableList<Int> = mutableListOf(1,2,3)`
-    - 可用方法：`count（计算长度）`、`in（检查元素是否存在，var v = "str" in strList`、`add/remove`、`first/last`
-    - 可以将一个可变的列表赋值给只读列表，集合和映射也是
-- Sets：集合（无序，唯一）
-    - 只读：`setOf()`/可变：`mutableSetOf()`
-    - 可用方法：`count`、`in`、`add/remove`
-- Maps：映射（k-v）
-    - 只读：`mapOf()`/可变：`mutableMapOf()`
-    - 初始化：`var m: Map<Int, String> = mapOf(10 to "a", 20 to "b")`，可变map也可以正常赋值：`map["key"] = value`
-    - 尝试通过不在map里的key获取value，将得到`null`
-    - 可用方法：`remove`、`count`、`countainsKey(检查key是否存在)`、`keys/values(获得key或value的集合(MutableSet<T>))`、
-      `in(检查k或v在不在map里，var v = 1 in map.keys / var v = "a" in map.values)`
-
-## 控制流
-
-条件表达式：if/when（我们使用的其他语言很少有把when当switch用的，所以虽然kotlin推荐使用when，还是决定尽量不用）
-
-范围：`..`，接受开区间、倒序、设置步长
-
-- `1..4`=`1,2,3,4`, `1..<4`=`1,2,3`
-- `4 downTo 1`=`4,3,2,1`
-- `1..5 step 2`=`1,3,5`
-
-循环：for/while/do-while，很遗憾，这里没有办法兼顾其他语言的经验了
-
-- for：遍历，只能用来遍历范围、集合（list、set、map），`for (value in collection) {}`
-- while：循环，条件表达式为真时，执行代码块
-
-## 函数
-
-`fun [func name](): [return type] {}`
-
-函数最多只能返回一个值
-
-默认参数：`fun f(pageSize: Int = 10) {}`
-
-- 一个函数可以有多个默认参数
-- 如果默认参数出现在参数列表中间、调用时又忽略了它，那么你应为后续所有参数命名
-  `fun f(v1: Int = 0, v2: Int) {}  ->  f(v2=1)`
-- 可变数量参数：`fun f(vararg v: String) {}`->`f(v=arrayOf("a","b","c"))`
-    - 如果传的是数组（与函数声明中的变量类型不符），则需要在调用时为变量命名
-    - 如果该可变数量参数后面还有其他参数，其他参数需要在调用时命名
-
-函数体如果只有一行表达式，则函数可以简写成`fun sum(x:Int,y:Int):Int=x+y`，但还是为了兼顾其他语言使用习惯，通常不用
-
-lambda表达式，略。（时间紧、简单学习；lambda总是能扩写成可读性更好的标准函数，所以也不想学）
-
-## 类
+字符串模板：访问变量或表达式，将其转为字符串（常用于打印）
 
 ```kotlin
-class C(var Field2: String = "") { // 类头，可省略，需要在创建类实例时赋值
-    var Field1: Int = 0
-}
+val v: Int = 10  // 变量声明
+println("value: $v") // 使用时若变量未初始化，则会触发编译错误
+println("value: ${v + 1}")
 ```
 
-数据类，专门用来存储数据，自带一些数据处理成员函数
+## 类型
 
-- 形如：`data class User(var id: Int, var name: String)`
-- 成员函数：`toString()`、`equals()/==`、`copy()（深度拷贝，不影响原有实例）`
+### 基本类型
 
-继承：单继承，被继承的类需要标记为open/abstract
+- 整型：Byte Short Int Long
+    - 长度分别为8 16 32 64 bits
+    - 整型字面量支持：十进制子面量 (`100`)、十六进制 (`0xFF`)、二进制 (`0b11`)
+- 无符号整型：UByte UShort UInt ULong
+- 浮点型：Float Double
+- 布尔类型：Boolean
+- 字符：Char
+- 字符串：String
+    - 多行字符串：使用三个引号包围，形如`"""xxx"""`，参考go反引号 (` `` `)，保留内部格式（换行和缩进）、内部不需要转义
 
-```kotlin
-class C : ParentClass() {
-    override var category: String = "C"
-}
+整型除法总是舍弃小数部分，如果需要保留，至少将一个操作数设置为浮点型
 
-abstract class ParentClass {
-    abstract var category: String
-}
-```
+位运算是以函数的形式存在，例如左移 (`shl()`)、按位与 (`and()`)
 
-实现接口：可以实现多个接口（实现类要带括号，接口不带）
+### 集合 Collection
 
-```kotlin
-interface PaymentMethod {
-    // Functions are inheritable by default
-    fun initiatePayment(amount: Double): String
-}
-
-class CreditCardPayment(val cardNumber: String, val cardHolderName: String, val expiryDate: String) : PaymentMethod {
-    override fun initiatePayment(amount: Double): String {
-        // Simulate processing payment with credit card
-        return "Payment of $$amount initiated using Credit Card ending in ${cardNumber.takeLast(4)}."
-    }
-}
-
-fun main() {
-    val paymentMethod = CreditCardPayment("1234 5678 9012 3456", "John Doe", "12/25")
-    println(paymentMethod.initiatePayment(100.0))
-    // Payment of $100.0 initiated using Credit Card ending in 3456.
-}
-```
-
-## 空安全
-
-可空类型：`var str: String? = null`/`str?.length（返回null，不会出错）`/`str?.length ?: 0（自定义为空时的返回）`
-
-## 扩展函数
-
-不改变已有代码，为其增加功能
+- List：普通集合
+    - `List是有序的`：文档里的有序并不是内置了排序功能，它只是表达List可以按照顺序索引，相应的Set则不能使用索引访问
+- Set：无重复元素集合
+- Map：映射，键值对集合
 
 ```kotlin
-fun String.bold(): String = "<b>$this</b>"
+// list
+val readOnlyList: List<Int> = listOf(1, 2, 3) // kotlin可以推断集合类型，也可以为变量显式声明类型
+val mutableList: MutableList<Int> = mutableListOf(1, 2, 3)
 
-fun main() {
-    // "hello" is the receiver
-    println("hello".bold())
-    // <b>hello</b>
-}
-```
+val listCasting: List<Int> = listOf(1, 2, 3) // 可以将可变列表赋值给一个不可变的变量
+println(listCasting.count()) // list扩展函数：`count`、`add/remove`、`first/last`
 
-## 对象
+println(10 in listCasting) // in 操作符
 
-```kotlin
-object DoAuth {
-    fun takeParams(username: String, password: String) {
-        println("input Auth parameters = $username:$password")
-    }
-}
+// set
+val readOnlySet: Set<Int> = setOf(1, 2, 3)
+val mutableSet: MutableSet<Int> = mutableSet(1, 2, 3)
+println(mutableSet.count()) // set扩展函数：`count`、`add/remove`
 
-fun main() {
-    // The object is created when the takeParams() function is called
-    DoAuth.takeParams("coding_ninja", "N1njaC0ding!")
-    // input Auth parameters = coding_ninja:N1njaC0ding!
-}
-```
+// map
+val readOnlyMap: Map<Int, String> = mapOf(1 to "yi", 2 to "er")
+val multableMap: MutableMap<Int, String> = mutableMapOf(1 to "yi", 2 to "er")
+println(multableMap.count()) // map扩展函数：`count`、`remove`、`containsKey`、`keys/values`
 
-## 第三方库
+multableMap[9] = "jiu" // 可变map也可以正常赋值
+println(multableMap[100]) // `null`
 
-https://klibs.io
-
-## 语言指南
-
-`package my.code`package定义应放在文件顶部（第一行）
-
-`println()/readln()`打印到控制台、从控制台读取输入
-
-### 关键词
-
-硬性关键词，无论什么时候都不能用做标识符：（28）
-as break class continue do
-else false for fun if
-in interface is null object
-package return super this throw
-true try typealias typeof val
-var when while
-
-### 可见性
-
-private protected internal public(default)
-
-### 类型检查
-
-```kotlin
-var v: Any = "a string"
-if (v is String) {} // 应用在基本类型上，if代码块内部v已经隐式转换成String类型了（例如可以.length）
-
-var v: Animal = Dog()
-if (v is Dog) {} // 应用在自定义class的子类上，if代码块内部v已经隐式转换成Dog类型，可以访问其属性和方法
-
-var v: Any = "a string"
-if (v !is String) {return}
-// 如果程序执行到这里，v也会被隐式转换成String类型
-
-if (v is String && v.length > 0) {} // 我的理解是：is直接会在作用域内将变量修改为对应类型，包括if表达式、代码块
-
-if (v is T1 || v is T2) {} // 此时会将v隐式转换成T1、T2的最近公共父类
-```
-
-强制类型转换：`v as String`，通常看上去像是is的语法糖（类型转换），还可以**强制**转换，例如把父类实例强转成子类类型
-
-```kotlin
-var v:Animal = Dog()
-var v2 = v as? Dog
+println(10 in multableMap.keys) // 在key中查找可以不带`.keys`
+println("yi" in multableMap.values)
 ```
 
 ### 类型别名
 
-`typealias FilesMap<K> = MutableMap<K, MutableList<File>>`
+可能是kotlin也知道自己整出来的类型名很长，它允许定义类型别名。
 
-类型别名只是给开发者看的，编译器会将其与原类型统一处理，所以如果函数需要一个原类型变量，可以传一个别名类型变量；反过来也是
+在程序看来，类型原名和别名是一样的，所以它们之间可以随意交换使用
 
-## 编写android app界面
+```kotlin
+typealias UserIndex = Map<Long, User>
+typealias FileTable<K> = MutableMap<K, MutableList<File>>
+```
 
-- 入口：`oncreate()`
-- 布局：`setContent()`
-- UI：标有`@Composable`注解的函数
+## 控制流 Control Flow
 
+### 条件表达式 if when
 
+```kotlin
+val d: Int
+if (ok) {
+    d = 1
+} else {
+    d = 2
+}
+
+// if用作表达式，参考rust
+// 语句块如果只有一行，`{}`可以省略
+val d: Int = if (ok) 1 else 2
+
+// when，参考go的switch、rust的match
+// when即可以用作语句（无返回），也可以用作表达式（有返回）
+// when用作表达式时建议显式提供变量类型；用作表达式时必须考虑到所有情况或者提供默认分支
+// when和subject一起使用，还会检查是否已覆盖所有可能情况，参考rust match enum/Result/Option
+val res: String = when (d) { // 报错：when有多种类型返回值，建议把res类型修改为Any
+    1 -> "yi"
+    2 -> println("er")
+    else -> println("unkonwn")
+}
+
+// when不带参数，每一个分支都要是一个bool表达式
+val res = when {
+    d > 0 -> d
+    else -> 0
+}
+```
+
+### 范围
+
+```kotlin
+1..4 // 1,2,3,4
+1..<4 // 1,2,3
+4 downTo 1 // 4,3,2,1
+1..5 step 2 // 1,3,5
+```
+
+### 循环 for while
+
+```kotlin
+// for 遍历一个集合/范围
+for (counter in 1..5) {
+    print(counter) // 12345
+}
+
+// while
+while (counter < 10) {
+    counter++
+}
+
+// do while
+do {
+    counter++
+} while (counter < 10)
+```
+
+## 函数 function
+
+```kotlin
+fun f(x: Int = 10, Y: Int): Int { // 默认参数
+    return x + y
+}
+
+f(x = 10, y = 20) // 命名参数：你可以为输入参数命名，这样你可以以任意顺序提供参数，或者跳过默认参数
+
+fun f() {} // 没有返回值的函数，返回值类型为`Unit`
+
+fun sum(x: Int, y: Int): Int = x + y // 如果函数体只有一行，可以这样写
+
+// lambda函数：略
+
+// 函数类型，不同的输入、输出参数使函数拥有不同类型，例如定义一个闭包：
+val f: (Int, Int) -> Int = fun(x: Int, y: Int): Int {
+    return x + y
+}
+
+// 扩展函数：不改变当前代码，为一个类型扩展功能
+fun String.bold(): String = "<b>$this</b>" // 扩展函数中使用`this`表示receiver
+
+fun main() {
+    // "hello" is the receiver
+    println("hello".bold()) // <b>hello</b>  
+}
+```
+
+## 类 class
+
+```kotlin
+class Customer(val id: Int, var email: String) { // 类头，也是构造函数
+    var price: Int = 0
+
+    fun cost(money: Int) {
+        price -= money
+    }
+}
+
+// 数据类，用于持有数据，可以方便的打印、判等、复制
+data class User(val name: String, val id: Int)
+
+/* 继承 */
+
+// kotlin的类只支持单继承，所有类最终都继承自Any。接口可以多继承
+fun main() {
+    val k = Kotlin("Mario's")
+    println(k.program("practice"))
+    println(k.programDemo("practice"))
+}
+
+// 抽象类：不能创建实例，默认可以被继承
+// 普通属性/方法：需要在抽象类中使用'open'修饰符，属性和方法才能在子类中重写
+// 抽象属性/方法：继承必须实现抽象类的*全部*抽象属性和方法
+abstract class ProgramLanguage(val note: String) {
+    open val id: Int = 0
+    abstract val name: String
+
+    abstract fun hello()
+
+    open fun program(str: String): String {
+        return "$note $str"
+    }
+}
+
+interface ProgramDemo {
+    // 接口不应该带有属性，因为kotlin最终会编译成java字节码运行在java虚拟机上，而JVM规定接口不能持有数据
+    // 接口在一些情况下会声明属性，但是这个属性最终还是由实现接口的类持有
+    fun programDemo(str: String): String
+}
+
+// 普通类添加'open'修饰符变成开放类，开放类可被继承
+open class Kotlin(note: String) : ProgramLanguage(note), ProgramDemo { // 先写继承、再写接口
+    override val id: Int = 1
+    override val name: String = "Kotlin"
+
+    override fun hello() = println("Hello, Kotlin")
+
+    override fun program(str: String): String {
+        return "$note $name $str"
+    }
+
+    override fun programDemo(str: String): String {
+        return "$note $name $str (face to object language)"
+    }
+}
+
+/* 对象 Object：只有一个实例的类 singleton */
+
+object Kotlin {
+    val language = "Kotlin"
+
+    fun program(str: String): String {
+        return "$language $str"
+    }
+}
+
+println(Kotlin.program("practice"))
+
+// 与类相似，对象也有数据对象 data object，只是数据对象没有复制方法，因为对象只能有一个实例
+
+/* 枚举类 */
+
+// 常规枚举
+enum class Language {
+    Java, Kotlin
+}
+
+// 带数值的枚举
+enum class Language(val n: String) {
+    Java("Java"),
+    Kotlin("Kotlin"); // 枚举类可以带有方法，如果带有方法，枚举常量与方法中见要用分号(`;`)分隔
+
+    fun isKotlin(): Boolean {
+        return this.n == Kotlin.toString()
+    }
+}
+```
+
+## 空安全 null safety
+
+kotlin会在编译期间检查null相关
+
+```kotlin
+var nullable: String? = null // 可空类型
+
+nullable?.toString() // 安全调用，如果nullable为null，则表达式的值为null，不会抛出错误
+
+nullable?.toString() ?: "" // elvis操作符，`?:`表示如果左操作数是null，则表达式的值为右操作数
+```
+
+```kotlin
+val str: Any = "str"
+println(str is String) // true，判断变量是否是指定类型，'!is'表示对判断结果取反
+// is可以用来检查子类型
+
+val s = str as String // 强制类型转换，失败会panic；使用'as?'转换失败时，表达式的值为null
+```
+
+## 包和导入 package and import
+
+第三方软件包：https://klibs.io
+
+```kotlin
+package com.mario.kotlin
+
+import com.mario.kotlin as K
+```
+
+## 关键词
+
+硬性关键词，无论什么时候都不能用做标识符：（28）  
+as break class continue do else false   
+for fun if in interface is null   
+object package return super this throw true  
+try typealias typeof val var when while

@@ -25,54 +25,61 @@ func NewEncryptorOnce(pubKey *ecdh.PublicKey) Encryptor {
 	return &encryptorOnce{pubKey: pubKey}
 }
 
-func (enc *encryptorOnce) Encrypt(originFile string, encFile string) *utils.Error {
-	e := enc.init()
+func (enc *encryptorOnce) Encrypt(originFile string, encFile string) (e *utils.Error) {
+	e = enc.init()
 	if e != nil {
-		return e
+		return
 	}
 
 	originFileBytes, err := os.ReadFile(originFile)
 	if err != nil {
-		e := utils.ErrReadOriginFile().WithCause(err)
+		e = utils.ErrReadOriginFile().WithCause(err)
 		mlog.Error(e.String())
-		return e
+		return
 	}
 
 	encryptedBytes := enc.aesGCM.Seal(nil, enc.nonce, originFileBytes, enc.fileHeader.AAD)
 
-	fileHeaderBytes, e := enc.fileHeader.Serialize()
-	if e != nil {
-		return e
-	}
-
-	file, err := os.OpenFile(encFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(encFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		e := utils.ErrOpenEncFile().WithCause(err)
+		e = utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
-		return e
+		return
 	}
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
 
-	_ = writer.WriteByte(byte(len(fileHeaderBytes)))
-	_, _ = writer.Write(fileHeaderBytes)
-	_, _ = writer.Write(encryptedBytes)
+	err = writer.WriteByte(byte(len(enc.fileHeader.Encoded)))
+	if err != nil {
+		e = utils.ErrWriteEncFile().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
+	_, err = writer.Write(enc.fileHeader.Encoded)
+	if err != nil {
+		e = utils.ErrWriteEncFile().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
+	_, err = writer.Write(encryptedBytes)
+	if err != nil {
+		e = utils.ErrWriteEncFile().WithCause(err)
+		mlog.Error(e.String())
+		return
+	}
 
 	err = writer.Flush()
 	if err != nil {
-		e := utils.ErrWriteEncFile().WithCause(err)
+		e = utils.ErrWriteEncFile().WithCause(err)
 		mlog.Error(e.String())
-		return e
+		return
 	}
 
-	return nil
+	return
 }
 
 func (enc *encryptorOnce) init() (e *utils.Error) {
-	// 检查：每一次加密文件都生成新的nonce，避免使用一个实例反复加密带来的安全风险
-	enc.fileHeader = NewFileHeader(utils.EncryptMethod_Once)
-
 	// ecdh
 	tempPrivKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
@@ -88,7 +95,11 @@ func (enc *encryptorOnce) init() (e *utils.Error) {
 		return
 	}
 
-	enc.fileHeader.PublicKey = tempPrivKey.PublicKey().Bytes()
+	// 检查：每一次加密文件都生成新的nonce，避免使用一个实例反复加密带来的安全风险
+	enc.fileHeader, e = NewFileHeader(utils.EncryptMethod_Once, tempPrivKey.PublicKey().Bytes())
+	if e != nil {
+		return
+	}
 
 	// kdf
 	aesKey, err := hkdf.Key(sha256.New, sharedKey, enc.fileHeader.Salt, utils.DeriveKeyInfo, utils.DeriveKeyLength)

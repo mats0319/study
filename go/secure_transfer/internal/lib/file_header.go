@@ -16,18 +16,27 @@ type FileHeader struct {
 	BaseNonce []byte // aes-gcm base nonce
 	PublicKey []byte
 	AAD       []byte
+
+	Encoded []byte
 }
 
-func NewFileHeader(encMethod utils.EncryptMethod) *FileHeader {
-	return &FileHeader{
+func NewFileHeader(encMethod utils.EncryptMethod, pubKey []byte) (*FileHeader, *utils.Error) {
+	fh := &FileHeader{
 		EncMethod: encMethod,
-		Salt:      utils.GenerateRandomBytes[[]byte](utils.DeriveKeySaltLength),
-		BaseNonce: utils.GenerateRandomBytes[[]byte](utils.AESBaseNonceLength),
-		AAD:       []byte(utils.FileHeaderAAD),
+		Salt:      utils.GenerateRandomBytes(utils.DeriveKeySaltLength),
+		BaseNonce: utils.GenerateRandomBytes(utils.AESBaseNonceLength),
+		PublicKey: pubKey,
 	}
+
+	e := fh.serialize()
+	if e != nil {
+		return nil, e
+	}
+
+	return fh, nil
 }
 
-func (fh *FileHeader) Serialize() (fhBytes []byte, e *utils.Error) {
+func (fh *FileHeader) serialize() (e *utils.Error) {
 	e = fh.canSerialize()
 	if e != nil {
 		return
@@ -38,19 +47,21 @@ func (fh *FileHeader) Serialize() (fhBytes []byte, e *utils.Error) {
 	aadStart := pubKStart + utils.PublicKeyLength
 	length := aadStart + utils.FileHeaderAADLength
 
-	fhBytes = make([]byte, length)
+	fh.Encoded = make([]byte, length)
 
-	copy(fhBytes[:2], utils.FileHeaderStart)
-	fhBytes[2] = fh.EncMethod
-	fhBytes[3] = byte(utils.DeriveKeySaltLength)
-	fhBytes[4] = byte(utils.AESBaseNonceLength)
-	fhBytes[5] = byte(utils.PublicKeyLength)
-	fhBytes[6] = byte(utils.FileHeaderAADLength)
+	copy(fh.Encoded[:2], utils.FileHeaderStart)
+	fh.Encoded[2] = fh.EncMethod
+	fh.Encoded[3] = byte(utils.DeriveKeySaltLength)
+	fh.Encoded[4] = byte(utils.AESBaseNonceLength)
+	fh.Encoded[5] = byte(utils.PublicKeyLength)
+	fh.Encoded[6] = byte(utils.FileHeaderAADLength)
 
-	copy(fhBytes[7:nonceStart], fh.Salt)
-	copy(fhBytes[nonceStart:pubKStart], fh.BaseNonce)
-	copy(fhBytes[pubKStart:aadStart], fh.PublicKey)
-	copy(fhBytes[aadStart:], fh.AAD)
+	copy(fh.Encoded[7:nonceStart], fh.Salt)
+	copy(fh.Encoded[nonceStart:pubKStart], fh.BaseNonce)
+	copy(fh.Encoded[pubKStart:aadStart], fh.PublicKey)
+
+	fh.AAD = utils.CalcSHA256(fh.Encoded[:aadStart])
+	copy(fh.Encoded[aadStart:], fh.AAD)
 
 	return
 }
@@ -100,6 +111,12 @@ func (fh *FileHeader) Deserialize(encFile string) (e *utils.Error) {
 	fh.PublicKey = data[pubKStart:aadStart]
 	fh.AAD = data[aadStart:]
 
+	if !utils.CompareBytes(fh.AAD, utils.CalcSHA256(data[:aadStart])) {
+		e = utils.ErrFileHeader().WithParam("hash not matched", "")
+		mlog.Error(e.String())
+		return
+	}
+
 	return
 }
 
@@ -113,8 +130,6 @@ func (fh *FileHeader) canSerialize() (e *utils.Error) {
 		e = utils.ErrFileHeader().WithParam("base_nonce", fh.BaseNonce)
 	case len(fh.PublicKey) != utils.PublicKeyLength:
 		e = utils.ErrFileHeader().WithParam("public_key", fh.PublicKey)
-	case len(fh.AAD) != utils.FileHeaderAADLength:
-		e = utils.ErrFileHeader().WithParam("aad", fh.AAD)
 	}
 
 	if e != nil {
@@ -170,13 +185,17 @@ func skipFileHeader(reader io.Reader) (n int64, e *utils.Error) {
 func readExact(reader io.Reader, buf []byte) (n int, e *utils.Error) {
 	n, err := io.ReadFull(reader, buf)
 	if err != nil {
-		if errors.Is(err, io.ErrUnexpectedEOF) || err == io.EOF {
-			return // 不视为错误
+		switch {
+		case err == io.EOF:
+			// 不视为错误
+			break
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			e = utils.ErrReadExact().WithParam("File truncated", "文件被截断")
+			mlog.Error(e.String())
+		default:
+			e = utils.ErrReadExact().WithCause(err)
+			mlog.Error(e.String())
 		}
-
-		e = utils.ErrReadExact().WithCause(err)
-		mlog.Error(e.String())
-		return
 	}
 
 	return

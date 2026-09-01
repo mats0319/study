@@ -13,8 +13,9 @@ import (
 )
 
 func main() {
-	mlog.Initialize()
+	mlog.Initialize(mlog.W_File)
 	defer mlog.Close()
+	initStdoutLogger()
 
 	workDir()
 
@@ -33,24 +34,24 @@ func workDir() {
 }
 
 func start() {
+	inputRE := regexp.MustCompile(`(\w+)`) // 匹配第一个字符串，大小写不敏感 (== [0-9A-Za-z_])
 	scanner := bufio.NewScanner(os.Stdin)
 
 ALL:
 	for { // block
-		info("Enter Your Command ('h' for help) .")
+		info("Enter Your Command ('h' for help): ")
 
 		if !scanner.Scan() {
 			break
 		}
 
 		text := strings.ToLower(strings.TrimSpace(scanner.Text()))
-		// 匹配第一个字符串，大小写不敏感 (== [0-9A-Za-z_])
-		matched := regexp.MustCompile(`(\w+)`).FindString(text)
+		matched := inputRE.FindString(text)
 		switch matched {
 		case "h", "help":
 			printHelp()
 		case "g", "gen", "generate":
-			err := internal.GenerateKeyPair()
+			err := internal.GenerateKeyPair(false)
 			printResult("Generate Key Pair", err)
 		case "i", "init", "initialize":
 			err := internal.InitMessageFile()
@@ -65,7 +66,7 @@ ALL:
 			info("Exit.")
 			break ALL
 		default:
-			info("Unknown input: \"" + text + "\", 'h' for help.")
+			info(fmt.Sprintf("Unknown input: '%s', 'h' for help.\n", text))
 		}
 	}
 }
@@ -81,16 +82,31 @@ func printHelp() {
 `)
 }
 
-var logger = mlog.DefaultLogger()
+var logger *slog.Logger
+
+func initStdoutLogger() {
+	h, e := mlog.NewHandler(mlog.W_Stdout)
+	if e != nil {
+		panic(e)
+	}
+
+	logger = slog.New(h)
+}
 
 func info(message string) {
-	mlog.Log(logger, slog.LevelInfo, fmt.Sprintf("> %s", message))
+	data := fmt.Sprintf("> %s", message)
+	mlog.Log(logger, slog.LevelInfo, data)
+	mlog.Info(data)
 }
 
 func printResult(message string, err error) {
 	if err != nil {
-		mlog.Log(logger, slog.LevelError, fmt.Sprintf("%s Failed, %s\n", message, err.Error()))
+		data := fmt.Sprintf("- %s Failed, %s\n", message, err.Error())
+		mlog.Log(logger, slog.LevelError, data)
+		mlog.Error(data)
 	} else {
-		mlog.Log(logger, slog.LevelInfo, fmt.Sprintf("> %s Success.\n", message))
+		data := fmt.Sprintf("> %s Success.\n", message)
+		mlog.Log(logger, slog.LevelInfo, data)
+		mlog.Info(data)
 	}
 }

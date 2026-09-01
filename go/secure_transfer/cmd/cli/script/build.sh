@@ -31,8 +31,6 @@ mkdir -p "./build"
     sha1sum "$filePath" | cut -d" " -f1 > "$filePath.sha1"
   }
 
-go mod tidy # 这么做其实会下载全部依赖，所以该脚本仅供参考
-
 compile_exec "windows/amd64"
 compile_exec "linux/amd64"
 compile_exec "linux/arm64"

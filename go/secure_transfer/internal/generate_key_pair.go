@@ -10,7 +10,7 @@ import (
 	mlog "github.com/mats0319/secure_transfer/utils/log"
 )
 
-func GenerateKeyPair() error {
+func GenerateKeyPair(overwriteFlag bool) error {
 	privKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
 		e := utils.ErrGeneratePrivateKey().WithCause(err)
@@ -18,12 +18,12 @@ func GenerateKeyPair() error {
 		return e
 	}
 
-	e := serializePrivateKey(privKey)
+	e := serializePrivateKey(privKey, overwriteFlag)
 	if e != nil {
 		return e
 	}
 
-	e = serializePublicKey(privKey.PublicKey())
+	e = serializePublicKey(privKey.PublicKey(), overwriteFlag)
 	if e != nil {
 		return e
 	}
@@ -31,7 +31,7 @@ func GenerateKeyPair() error {
 	return nil
 }
 
-func serializePrivateKey(privKey *ecdh.PrivateKey) *utils.Error {
+func serializePrivateKey(privKey *ecdh.PrivateKey, overwriteFlag bool) *utils.Error {
 	privKeyBytes, err := x509.MarshalPKCS8PrivateKey(privKey)
 	if err != nil {
 		e := utils.ErrMarshalPrivateKey().WithCause(err)
@@ -41,6 +41,15 @@ func serializePrivateKey(privKey *ecdh.PrivateKey) *utils.Error {
 
 	block := &pem.Block{Type: "Private Key", Bytes: privKeyBytes}
 	blockBytes := pem.EncodeToMemory(block)
+
+	if !overwriteFlag {
+		_, err = os.Stat(utils.PrivateKeyFileName)
+		if !os.IsNotExist(err) {
+			e := utils.ErrFileExist().WithCause(err)
+			mlog.Error(e.String())
+			return e
+		}
+	}
 
 	err = os.WriteFile(utils.PrivateKeyFileName, blockBytes, 0600)
 	if err != nil {
@@ -52,7 +61,7 @@ func serializePrivateKey(privKey *ecdh.PrivateKey) *utils.Error {
 	return nil
 }
 
-func serializePublicKey(pubKey *ecdh.PublicKey) *utils.Error {
+func serializePublicKey(pubKey *ecdh.PublicKey, overwriteFlag bool) *utils.Error {
 	pubKeyBytes, err := x509.MarshalPKIXPublicKey(pubKey)
 	if err != nil {
 		e := utils.ErrMarshalPublicKey().WithCause(err)
@@ -62,6 +71,15 @@ func serializePublicKey(pubKey *ecdh.PublicKey) *utils.Error {
 
 	block := &pem.Block{Type: "Public Key", Bytes: pubKeyBytes}
 	blockBytes := pem.EncodeToMemory(block)
+
+	if !overwriteFlag {
+		_, err = os.Stat(utils.PublicKeyFileName)
+		if !os.IsNotExist(err) {
+			e := utils.ErrFileExist().WithCause(err)
+			mlog.Error(e.String())
+			return e
+		}
+	}
 
 	err = os.WriteFile(utils.PublicKeyFileName, blockBytes, 0644)
 	if err != nil {

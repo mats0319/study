@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/mats0319/secure_transfer/utils"
@@ -11,6 +12,7 @@ type frame struct {
 	index       int32
 	isLastFrame bool
 	data        []byte
+	e           *utils.Error
 }
 
 func (f *frame) serialize() []byte {
@@ -36,7 +38,7 @@ func (f *frame) serialize() []byte {
 	return res
 }
 
-func (f *frame) deserialize(reader io.Reader) (e *utils.Error) {
+func (f *frame) deserialize(reader io.Reader, index int) (e *utils.Error) {
 	fixed := make([]byte, 9)
 	n, e := readExact(reader, fixed)
 	if e != nil {
@@ -60,8 +62,19 @@ func (f *frame) deserialize(reader io.Reader) (e *utils.Error) {
 	}
 
 	f.index = (int32(fixed[1]) << 24) + (int32(fixed[2]) << 16) + (int32(fixed[3]) << 8) + int32(fixed[4])
+	if f.index != int32(index) {
+		e = utils.ErrFrame().WithParam(fmt.Sprintf("invalid frame index, want: %d, get: %d", index, f.index), "")
+		mlog.Error(e.String())
+		return
+	}
 
 	length := (int32(fixed[5]) << 24) + (int32(fixed[6]) << 16) + (int32(fixed[7]) << 8) + int32(fixed[8])
+	if length > utils.FrameSize+16 {
+		e = utils.ErrFrame().WithParam("should less than 1M, get: ", length)
+		mlog.Error(e.String())
+		return
+	}
+
 	data := make([]byte, length)
 	n, e = readExact(reader, data)
 	if e != nil {

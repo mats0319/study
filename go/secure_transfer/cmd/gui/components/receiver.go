@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -10,11 +11,13 @@ import (
 	"github.com/mats0319/secure_transfer/internal"
 )
 
+var decryptLock atomic.Bool
+
 func makeReceiverContent() *fyne.Container {
 	titleText := widget.NewLabel("> Receiver:")
 
 	generateKeyPairButton := widget.NewButton("Generate Key Pair", func() {
-		err := internal.GenerateKeyPair()
+		err := internal.GenerateKeyPair(false)
 		printResult("Generate Key Pair.", err)
 	})
 
@@ -40,8 +43,16 @@ func makeReceiverContent() *fyne.Container {
 			return
 		}
 
-		err := internal.Decrypt()
-		printResult("Decrypt", err)
+		// avoid UI goroutine blocked
+		go func() {
+			if !decryptLock.CompareAndSwap(false, true) {
+				return
+			}
+			defer decryptLock.Store(false)
+
+			err := internal.Decrypt()
+			fyne.Do(func() { printResult("Decrypt", err) })
+		}()
 	})
 
 	titleWrapper := container.NewBorder(blank(40), blank(40), blank(20), nil, titleText)

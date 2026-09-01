@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/ecdh"
-	"math/rand/v2"
+	"crypto/rand"
+	"crypto/sha256"
 	"os"
 	"strings"
 
@@ -36,41 +38,52 @@ func FirstFile(fileBaseName string) (fileName string, fileSize int64, e *Error) 
 			continue
 		}
 
-		if strings.HasPrefix(fileInfo.Name(), fileBaseName) { // match file name without extension
+		// match file name, require: 'message.xxx'
+		if strings.HasPrefix(fileInfo.Name(), fileBaseName+".") &&
+			(strings.Index(fileInfo.Name(), ".") == strings.LastIndex(fileInfo.Name(), ".")) {
 			fileName = fileInfo.Name()
 			fileSize = fileInfo.Size()
 			break
 		}
 	}
 
+	if fileName == "" {
+		e = ErrNoMatchedFile()
+	}
+
 	return
 }
 
-const charactersLibrary = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const useBits = 6 // 6个bit位可以表示全部字符库中的字符
-const useMask = 1<<useBits - 1
+func GenerateRandomBytes(length int) []byte {
+	bytesBuilder := bytes.NewBuffer(nil)
 
-func GenerateRandomBytes[T string | []byte](length int) T {
-	b := make([]byte, length)
+	for l := 0; l < length; {
+		n, _ := bytesBuilder.WriteString(rand.Text()) // err always nil
+		l += n
+	}
 
-	randomNum, remainBits := rand.Int64(), 64
-	for i := 0; i < len(b); {
-		if remainBits < useBits {
-			randomNum, remainBits = rand.Int64(), 64
-		}
+	return bytesBuilder.Bytes()[:length]
+}
 
-		index := int(randomNum & useMask) // 0b0011 1111
-		if index < len(charactersLibrary) {
-			randomNum >>= useBits
-			remainBits -= useBits
+func CalcSHA256(data []byte) []byte {
+	hasher := sha256.New()
+	hasher.Write(data)
 
-			b[i] = charactersLibrary[index]
-			i++
-		} else {
-			randomNum >>= 1
-			remainBits -= 1
+	return hasher.Sum(nil)
+}
+
+func CompareBytes(a []byte, b []byte) (isEqual bool) {
+	if len(a) != len(b) {
+		return
+	}
+
+	isEqual = true
+	for i := range a {
+		if a[i] != b[i] {
+			isEqual = false
+			break
 		}
 	}
 
-	return T(b)
+	return
 }

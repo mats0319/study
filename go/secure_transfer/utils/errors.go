@@ -1,8 +1,6 @@
 package utils
 
 var (
-	ErrForTest = newError(-1, "test error string")
-
 	// common: 9xxxx
 	// - 900xx: key
 	// - 901xx: encrypt/decrypt
@@ -20,10 +18,12 @@ var (
 	// - 102xx: initialize message file
 	ErrReadDir           = newError(10001, "Read Current Dir Failed")
 	ErrGetFileInfo       = newError(10002, "Get FileInfo Failed")
+	ErrNoMatchedFile     = newError(10003, "No Matched File")
 	ErrMarshalPrivateKey = newError(10101, "Marshal Private Key Failed")
 	ErrSavePrivateKey    = newError(10102, "Save Private Key Failed")
-	ErrMarshalPublicKey  = newError(10103, "Marshal Public Key Failed")
-	ErrSavePublicKey     = newError(10104, "Save Public Key Failed")
+	ErrFileExist         = newError(10103, "File Already Exist")
+	ErrMarshalPublicKey  = newError(10104, "Marshal Public Key Failed")
+	ErrSavePublicKey     = newError(10105, "Save Public Key Failed")
 	ErrInitMessageFile   = newError(10201, "Initialize Message File Failed")
 
 	// encrypt: 2xxxx

@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bufio"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdh"
@@ -33,41 +34,28 @@ func (dec *decryptorStream) Decrypt(encFile string, decFile string) (e *utils.Er
 
 	encryptedFrameCh := make(chan *frame, 100)
 	decryptedFrameCh := make(chan *frame, 100)
-	errCh := make(chan *utils.Error, 10)
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	var wg sync.WaitGroup
-	wg.Go(func() {
-		e := dec.read(encryptedFrameCh, encFile)
-		if e != nil {
-			errCh <- e
-		}
-		close(encryptedFrameCh)
-	})
+	wg.Go(func() { dec.read(ctx, encryptedFrameCh, encFile) })
 	wg.Go(func() {
 		var wg2 sync.WaitGroup
 		for range 8 {
-			wg2.Go(func() {
-				e := dec.decrypt(encryptedFrameCh, decryptedFrameCh)
-				if e != nil {
-					errCh <- e
-				}
-			})
+			wg2.Go(func() { dec.decrypt(ctx, encryptedFrameCh, decryptedFrameCh) })
 		}
 		wg2.Wait()
+
 		close(decryptedFrameCh)
 	})
 	wg.Go(func() {
-		e := dec.write(decryptedFrameCh, decFile)
+		e = dec.write(ctx, decryptedFrameCh, decFile)
 		if e != nil {
-			errCh <- e
+			cancel()
 		}
 	})
 
 	wg.Wait()
-
-	if len(errCh) > 0 {
-		e = <-errCh
-	}
 
 	return
 }
@@ -116,65 +104,83 @@ func (dec *decryptorStream) init() (e *utils.Error) {
 	return
 }
 
-func (dec *decryptorStream) read(ch chan *frame, encFile string) (e *utils.Error) {
+func (dec *decryptorStream) read(ctx context.Context, ch chan *frame, encFile string) {
+	defer close(ch)
+
 	file, err := os.Open(encFile)
 	if err != nil {
-		e = utils.ErrOpenEncFile().WithCause(err)
+		e := utils.ErrOpenEncFile().WithCause(err)
 		mlog.Error(e.String())
+		sendChanUnblocked(ctx, ch, &frame{e: e})
 		return
 	}
 	defer file.Close()
 
 	reader := bufio.NewReaderSize(file, utils.FrameSize*2)
 
-	_, e = skipFileHeader(reader)
+	_, e := skipFileHeader(reader)
 	if e != nil {
+		sendChanUnblocked(ctx, ch, &frame{e: e})
 		return
 	}
 
-	for {
-		frameIns := &frame{}
-
-		e = frameIns.deserialize(reader)
-		if e != nil {
+	for index := 0; ; index++ {
+		select {
+		case <-ctx.Done():
 			return
-		}
+		default:
+			frameIns := &frame{}
 
-		ch <- frameIns
+			e = frameIns.deserialize(reader, index)
+			if e != nil {
+				sendChanUnblocked(ctx, ch, &frame{e: e})
+				return
+			}
 
-		if frameIns.isLastFrame {
-			break
+			sendChanUnblocked(ctx, ch, frameIns)
+
+			if frameIns.isLastFrame {
+				return
+			}
 		}
 	}
-
-	return
 }
 
-func (dec *decryptorStream) decrypt(encryptedFrameCh chan *frame, decryptedFrameCh chan *frame) (e *utils.Error) {
+func (dec *decryptorStream) decrypt(ctx context.Context, encryptedFrameCh chan *frame, decryptedFrameCh chan *frame) {
+	frameIns := &frame{}
+	ok := false
+
 	for {
-		frameIns, ok := <-encryptedFrameCh
-		if !ok {
-			break
+		select {
+		case <-ctx.Done():
+			return
+		case frameIns, ok = <-encryptedFrameCh:
+			if !ok {
+				return
+			}
+			if frameIns.e != nil {
+				sendChanUnblocked(ctx, decryptedFrameCh, frameIns)
+				return
+			}
+
+			nonce := makeNonce(dec.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
+
+			decryptedBytes, err := dec.aesGCM.Open(nil, nonce, frameIns.data, dec.fileHeader.AAD)
+			if err != nil {
+				e := utils.ErrAESDecrypt().WithCause(err)
+				mlog.Error(e.String())
+				sendChanUnblocked(ctx, decryptedFrameCh, &frame{e: e})
+				return
+			}
+
+			frameIns.data = decryptedBytes
+
+			sendChanUnblocked(ctx, decryptedFrameCh, frameIns)
 		}
-
-		nonce := makeNonce(dec.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
-
-		decryptedBytes, err := dec.aesGCM.Open(nil, nonce, frameIns.data, dec.fileHeader.AAD)
-		if err != nil {
-			e = utils.ErrAESDecrypt().WithCause(err)
-			mlog.Error(e.String())
-			return e
-		}
-
-		frameIns.data = decryptedBytes
-
-		decryptedFrameCh <- frameIns
 	}
-
-	return
 }
 
-func (dec *decryptorStream) write(ch chan *frame, decFile string) (e *utils.Error) {
+func (dec *decryptorStream) write(ctx context.Context, ch chan *frame, decFile string) (e *utils.Error) {
 	frameCache := make(map[int32]*frame)
 	writeIndex := int32(0)
 
@@ -188,26 +194,35 @@ func (dec *decryptorStream) write(ch chan *frame, decFile string) (e *utils.Erro
 
 	writer := bufio.NewWriter(file)
 
+ALL:
 	for {
-		frameIns, ok := <-ch
-		if !ok {
-			break
-		}
-
-		frameCache[frameIns.index] = frameIns
-
-		for frameIns != nil && frameIns.index == writeIndex {
-			_, err := writer.Write(frameIns.data)
-			if err != nil {
-				e = utils.ErrWriteDecFile().WithCause(err)
-				mlog.Error(e.String())
+		select {
+		case <-ctx.Done():
+			return
+		case frameIns, ok := <-ch:
+			if !ok {
+				break ALL
+			}
+			if frameIns.e != nil {
+				e = frameIns.e
 				return
 			}
 
-			delete(frameCache, writeIndex)
-			writeIndex++
+			frameCache[frameIns.index] = frameIns
 
-			frameIns, _ = frameCache[writeIndex]
+			for frameIns != nil && frameIns.index == writeIndex {
+				_, err := writer.Write(frameIns.data)
+				if err != nil {
+					e = utils.ErrWriteDecFile().WithCause(err)
+					mlog.Error(e.String())
+					return
+				}
+
+				delete(frameCache, writeIndex)
+				writeIndex++
+
+				frameIns, _ = frameCache[writeIndex]
+			}
 		}
 	}
 

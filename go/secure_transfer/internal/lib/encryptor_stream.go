@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bufio"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdh"
@@ -33,49 +34,33 @@ func (enc *encryptorStream) Encrypt(originFile string, encFile string) (e *utils
 
 	originFrameCh := make(chan *frame, 100)
 	encryptedFrameCh := make(chan *frame, 100)
-	errCh := make(chan *utils.Error, 10)
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	var wg sync.WaitGroup
-	wg.Go(func() {
-		e := enc.read(originFrameCh, originFile)
-		if e != nil {
-			errCh <- e
-		}
-		close(originFrameCh)
-	})
+	wg.Go(func() { enc.read(ctx, originFrameCh, originFile) })
 	wg.Go(func() {
 		var wg2 sync.WaitGroup
 		for range 8 {
-			wg2.Go(func() {
-				e := enc.encrypt(originFrameCh, encryptedFrameCh)
-				if e != nil {
-					errCh <- e
-				}
-			})
+			wg2.Go(func() { enc.encrypt(ctx, originFrameCh, encryptedFrameCh) })
 		}
 		wg2.Wait()
+
 		close(encryptedFrameCh)
 	})
 	wg.Go(func() {
-		e := enc.write(encryptedFrameCh, encFile)
+		e = enc.write(ctx, encryptedFrameCh, encFile)
 		if e != nil {
-			errCh <- e
+			cancel()
 		}
 	})
 
 	wg.Wait()
 
-	if len(errCh) > 0 {
-		e = <-errCh
-	}
-
 	return
 }
 
 func (enc *encryptorStream) init() (e *utils.Error) {
-	// 检查：每一次加密文件都生成新的nonce，避免使用一个实例反复加密带来的安全风险
-	enc.fileHeader = NewFileHeader(utils.EncryptMethod_Stream)
-
 	// ecdh
 	tempPrivKey, err := utils.Curve().GenerateKey(nil)
 	if err != nil {
@@ -91,7 +76,11 @@ func (enc *encryptorStream) init() (e *utils.Error) {
 		return
 	}
 
-	enc.fileHeader.PublicKey = tempPrivKey.PublicKey().Bytes()
+	// 检查：每一次加密文件都生成新的nonce，避免使用一个实例反复加密带来的安全风险
+	enc.fileHeader, e = NewFileHeader(utils.EncryptMethod_Stream, tempPrivKey.PublicKey().Bytes())
+	if e != nil {
+		return
+	}
 
 	// kdf
 	aesKey, err := hkdf.Key(sha256.New, sharedKey, enc.fileHeader.Salt, utils.DeriveKeyInfo, utils.DeriveKeyLength)
@@ -121,11 +110,14 @@ func (enc *encryptorStream) init() (e *utils.Error) {
 	return
 }
 
-func (enc *encryptorStream) read(ch chan *frame, originFile string) (e *utils.Error) {
+func (enc *encryptorStream) read(ctx context.Context, ch chan *frame, originFile string) {
+	defer close(ch)
+
 	file, err := os.Open(originFile)
 	if err != nil {
-		e = utils.ErrOpenOriginFile().WithCause(err)
+		e := utils.ErrOpenOriginFile().WithCause(err)
 		mlog.Error(e.String())
+		sendChanUnblocked(ctx, ch, &frame{e: e})
 		return
 	}
 	defer file.Close()
@@ -134,49 +126,62 @@ func (enc *encryptorStream) read(ch chan *frame, originFile string) (e *utils.Er
 	counter := int32(0)
 
 	for {
-		originFrame := make([]byte, utils.FrameSize, utils.FrameSize+16)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			originFrame := make([]byte, utils.FrameSize, utils.FrameSize+16)
 
-		n, e := readExact(reader, originFrame)
-		if e != nil {
-			return e
+			n, e := readExact(reader, originFrame)
+			if e != nil {
+				sendChanUnblocked(ctx, ch, &frame{e: e})
+				return
+			}
+
+			isLastFrame := n < len(originFrame)
+
+			sendChanUnblocked(ctx, ch, &frame{
+				index:       counter,
+				isLastFrame: isLastFrame,
+				data:        originFrame[:n],
+			})
+
+			if isLastFrame {
+				return
+			}
+
+			counter++
 		}
-
-		isLastFrame := n < len(originFrame)
-
-		ch <- &frame{
-			index:       counter,
-			isLastFrame: isLastFrame,
-			data:        originFrame[:n],
-		}
-
-		if isLastFrame {
-			break
-		}
-
-		counter++
 	}
-
-	return
 }
 
-func (enc *encryptorStream) encrypt(originFrameCh chan *frame, encryptedFrameCh chan *frame) (e *utils.Error) {
+func (enc *encryptorStream) encrypt(ctx context.Context, originFrameCh chan *frame, encryptedFrameCh chan *frame) {
+	frameIns := &frame{}
+	ok := false
+
 	for {
-		frameIns, ok := <-originFrameCh
-		if !ok {
-			break
+		select {
+		case <-ctx.Done():
+			return
+		case frameIns, ok = <-originFrameCh:
+			if !ok {
+				return
+			}
+			if frameIns.e != nil {
+				sendChanUnblocked(ctx, encryptedFrameCh, frameIns)
+				return
+			}
+
+			nonce := makeNonce(enc.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
+
+			frameIns.data = enc.aesGCM.Seal(nil, nonce, frameIns.data, enc.fileHeader.AAD)
+
+			sendChanUnblocked(ctx, encryptedFrameCh, frameIns)
 		}
-
-		nonce := makeNonce(enc.fileHeader.BaseNonce, frameIns.isLastFrame, frameIns.index)
-
-		frameIns.data = enc.aesGCM.Seal(nil, nonce, frameIns.data, enc.fileHeader.AAD)
-
-		encryptedFrameCh <- frameIns
 	}
-
-	return
 }
 
-func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Error) {
+func (enc *encryptorStream) write(ctx context.Context, ch chan *frame, encFile string) (e *utils.Error) {
 	file, err := os.OpenFile(encFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		e = utils.ErrOpenEncFile().WithCause(err)
@@ -187,18 +192,13 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 
 	writer := bufio.NewWriter(file)
 
-	fileHeaderBytes, e := enc.fileHeader.Serialize()
-	if e != nil {
-		return
-	}
-
-	err = writer.WriteByte(byte(len(fileHeaderBytes)))
+	err = writer.WriteByte(byte(len(enc.fileHeader.Encoded)))
 	if err != nil {
 		e = utils.ErrWriteEncFile().WithCause(err)
 		mlog.Error(e.String())
 		return
 	}
-	_, err = writer.Write(fileHeaderBytes)
+	_, err = writer.Write(enc.fileHeader.Encoded)
 	if err != nil {
 		e = utils.ErrWriteEncFile().WithCause(err)
 		mlog.Error(e.String())
@@ -208,26 +208,35 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 	frameCache := make(map[int32]*frame)
 	writeIndex := int32(0)
 
+ALL:
 	for {
-		frameIns, ok := <-ch
-		if !ok {
-			break
-		}
-
-		frameCache[frameIns.index] = frameIns
-
-		for frameIns != nil && frameIns.index == writeIndex {
-			_, err := writer.Write(frameIns.serialize())
-			if err != nil {
-				e = utils.ErrWriteEncFile().WithCause(err)
-				mlog.Error(e.String())
+		select {
+		case <-ctx.Done():
+			return
+		case frameIns, ok := <-ch:
+			if !ok {
+				break ALL
+			}
+			if frameIns.e != nil {
+				e = frameIns.e
 				return
 			}
 
-			delete(frameCache, writeIndex)
-			writeIndex++
+			frameCache[frameIns.index] = frameIns
 
-			frameIns, _ = frameCache[writeIndex]
+			for frameIns != nil && frameIns.index == writeIndex {
+				_, err := writer.Write(frameIns.serialize())
+				if err != nil {
+					e = utils.ErrWriteEncFile().WithCause(err)
+					mlog.Error(e.String())
+					return
+				}
+
+				delete(frameCache, writeIndex)
+				writeIndex++
+
+				frameIns, _ = frameCache[writeIndex]
+			}
 		}
 	}
 
@@ -239,4 +248,13 @@ func (enc *encryptorStream) write(ch chan *frame, encFile string) (e *utils.Erro
 	}
 
 	return
+}
+
+func sendChanUnblocked(ctx context.Context, ch chan *frame, frameIns *frame) {
+	select {
+	case <-ctx.Done():
+		return
+	case ch <- frameIns:
+		// avoid send block even deadlock, when channel buffer is full
+	}
 }
